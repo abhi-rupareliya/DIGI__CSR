@@ -13,7 +13,3 @@ app.use(cors());
 app.listen(PORT, () => {
   console.log("Server listening...",);
 });
-
-app.get('/',(req,res)=>{
-    res.send("Welcome")
-})
