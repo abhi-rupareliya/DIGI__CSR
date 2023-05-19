@@ -10,6 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
+require('./Routes/AuthRoutes')(app)
 app.listen(PORT, () => {
   console.log("Server listening...",);
 });

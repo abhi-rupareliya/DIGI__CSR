@@ -4,65 +4,55 @@ const CompanySchema = mongoose.Schema({
   crn: {
     type: String,
     required: true,
+    unique: true,
   },
   company_name: {
     type: String,
     required: true,
+    unique: true,
   },
   email: {
     type: String,
     required: true,
+    unique: true,
   },
-  location: {
-    type: String,
-    required: true,
+  profile: {
+    location: {
+      city: String,
+      state: String,
+      pincode: String,
+    },
+    establishment_year: {
+      type: Number,
+    },
+    comunication_person: {
+      cp_name: {
+        type: String,
+      },
+      cp_email: {
+        type: String,
+      },
+      cp_designation: {
+        type: String,
+      },
+    },
+    registration_certificate: {
+      type: Buffer,
+    },
+    tax_comp: {
+      _80G: {
+        type: Boolean,
+      },
+      _35AC: {
+        type: Boolean,
+      },
+      _12AA: {},
+      FCRA: {
+        type: Boolean,
+      },
+    },
+    sectors: [{ type: String }],
   },
-  establishment_year: {
-    type: Number,
-    required: true,
-  },
-  comunication_person: {
-    cp_name: {
-      type: String,
-      required: true,
-    },
-    cp_email: {
-      type: String,
-      required: true,
-    },
-    cp_designation: {
-      type: String,
-      required: true,
-    },
-  },
-  registration_certificate: {
-    type: Buffer,
-    required: true,
-  },
-  tax_comp: {
-    _80G: {
-      type: Boolean,
-      default: false,
-    },
-    _35AC: {
-      type: Boolean,
-      default: false,
-    },
-    _12AA: {
-      type: Boolean,
-      default: false,
-    },
-    FCRA: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  sectors: [
-    {
-      type: String,
-      require: true,
-    },
-  ],
   initial_data: [
     {
       year: {
@@ -80,4 +70,3 @@ const CompanySchema = mongoose.Schema({
 
 const Company = mongoose.model("Company", CompanySchema);
 module.exports = Company;
-
