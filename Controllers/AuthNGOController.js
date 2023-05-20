@@ -31,7 +31,7 @@ exports.NGOSignup = async (req, res) => {
       });
     }
 
-    const exist = await NGO.findOne({
+    const exist = await CRN.findOne({
       $or: [{ csr: csr } , { email: email }],
     });
 
