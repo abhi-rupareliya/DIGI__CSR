@@ -13,7 +13,6 @@ const ngoSchema = new mongoose.Schema({
 
   ngo_name: {
     type: String,
-    required: true,
   },
 
   summary: {

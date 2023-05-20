@@ -3,6 +3,7 @@ const Company = require("../Models/Company");
 const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
 const CRN = require("../Models/CRN");
+const jwt = require("jsonwebtoken");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -32,7 +33,7 @@ exports.CompanySignup = async (req, res) => {
     }
 
     const exist = await Company.findOne({
-      $or: [{ cin: cin }, { company_name: company_name }, { email: email }],
+      $or: [{ cin: cin }, { email: email }],
     });
 
     if (exist) {
@@ -74,7 +75,7 @@ exports.CompanySignup = async (req, res) => {
 
 exports.VerifyCompany = async (req, res) => {
   try {
-    const { cin, company_name, email, otp } = req.body;
+    const { cin, email, otp } = req.body;
 
     const is_verified = speakeasy.totp.verify({
       secret: email + process.env.OTPSEC,
@@ -85,7 +86,7 @@ exports.VerifyCompany = async (req, res) => {
 
     if (is_verified) {
       const exist = await Company.findOne({
-        $or: [{ cin: cin }, { company_name: company_name }, { email: email }],
+        $or: [{ cin: cin }, { email: email }],
       });
 
       if (exist) {
@@ -94,11 +95,16 @@ exports.VerifyCompany = async (req, res) => {
           message: "Company with this CRN, name or email already exists.",
         });
       }
-      const newCompany = await new Company({ cin, company_name, email });
+      const newCompany = await new Company({ cin, email });
       await newCompany.save();
-      res.status(200).send({ success: true, result: newCompany });
+      const authToken = jwt.sign(
+        { _id: newCompany._id, cin: newCompany.cin, email: newCompany.email },
+        process.env.JWT_SEC
+      );
+      res.status(200).send({ success: true, result: authToken });
     } else res.status(400).send({ success: false, message: "Wrong OTP" });
   } catch (error) {
+    console.warn(error);
     res.status(400).send({
       success: false,
       message: "Error creating company.",
