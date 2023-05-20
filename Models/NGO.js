@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const ngoSchema = new mongoose.Schema({
-  crn: {
+  csr: {
     type: String,
     required: true,
   },

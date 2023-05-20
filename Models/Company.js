@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const CompanySchema = mongoose.Schema({
-  crn: {
+  cin: {
     type: String,
     required: true,
     unique: true,
