@@ -2,6 +2,7 @@ require("dotenv").config({ path: "../.env" });
 const Company = require("../Models/Company");
 const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
+const CRN = require("../Models/CRN");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -16,10 +17,22 @@ const transporter = nodemailer.createTransport({
 
 exports.CompanySignup = async (req, res) => {
   try {
-    const { crn, company_name, email } = req.body;
+    const { cin, company_name, email } = req.body;
+
+    const checkCIN = await CRN.findOne({ cin: cin });
+    const checkEmail = await CRN.findOne({ email: email });
+    if (
+      (checkCIN && checkCIN.email != email) ||
+      (checkEmail && checkEmail.cin != cin)
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "CIN and email doesnt match.",
+      });
+    }
 
     const exist = await Company.findOne({
-      $or: [{ crn: crn }, { company_name: company_name }, { email: email }],
+      $or: [{ cin: cin }, { company_name: company_name }, { email: email }],
     });
 
     if (exist) {
@@ -59,11 +72,9 @@ exports.CompanySignup = async (req, res) => {
   }
 };
 
-// exports.AddCompanyProfile = async (req, res) => {};
-
 exports.VerifyCompany = async (req, res) => {
   try {
-    const { crn, company_name, email, otp } = req.body;
+    const { cin, company_name, email, otp } = req.body;
 
     const is_verified = speakeasy.totp.verify({
       secret: email + process.env.OTPSEC,
@@ -73,7 +84,17 @@ exports.VerifyCompany = async (req, res) => {
     });
 
     if (is_verified) {
-      const newCompany = await new Company({ crn, company_name, email });
+      const exist = await Company.findOne({
+        $or: [{ cin: cin }, { company_name: company_name }, { email: email }],
+      });
+
+      if (exist) {
+        return res.status(400).send({
+          success: false,
+          message: "Company with this CRN, name or email already exists.",
+        });
+      }
+      const newCompany = await new Company({ cin, company_name, email });
       await newCompany.save();
       res.status(200).send({ success: true, result: newCompany });
     } else res.status(400).send({ success: false, message: "Wrong OTP" });
@@ -84,3 +105,5 @@ exports.VerifyCompany = async (req, res) => {
     });
   }
 };
+
+// exports.AddCompanyProfile = async (req, res) => {};
