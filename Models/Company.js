@@ -8,10 +8,7 @@ const CompanySchema = mongoose.Schema({
   },
   company_name: {
     type: String,
-<<<<<<< HEAD
-=======
     // required: true,
->>>>>>> c2723555ff103cdc1facc0c794b4474702715b73
     unique: true,
   },
   email: {
