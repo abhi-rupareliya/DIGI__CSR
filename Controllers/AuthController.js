@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 
 exports.CompanySignup = async (req, res) => {
   try {
-    const { cin, company_name, email } = req.body;
+    const { cin, email } = req.body;
 
     const checkCIN = await CRN.findOne({ cin: cin });
     const checkEmail = await CRN.findOne({ email: email });
@@ -32,7 +32,7 @@ exports.CompanySignup = async (req, res) => {
     }
 
     const exist = await Company.findOne({
-      $or: [{ cin: cin }, { company_name: company_name }, { email: email }],
+      $or: [{ cin: cin } , { email: email }],
     });
 
     if (exist) {
