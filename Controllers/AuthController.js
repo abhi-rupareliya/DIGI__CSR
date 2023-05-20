@@ -32,7 +32,7 @@ exports.CompanySignup = async (req, res) => {
     }
 
     const exist = await Company.findOne({
-      $or: [{ cin: cin } , { email: email }],
+      $or: [{ cin: cin }, { email: email }],
     });
 
     if (exist) {
