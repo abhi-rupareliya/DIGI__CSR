@@ -33,22 +33,14 @@ const CompanySchema = mongoose.Schema({
       cp_designation: {
         type: String,
       },
+      cp_phone: {
+        type: String,
+      },
     },
     registration_certificate: {
       type: Buffer,
     },
-    tax_comp: {
-      _80G: {
-        type: Boolean,
-      },
-      _35AC: {
-        type: Boolean,
-      },
-      _12AA: {},
-      FCRA: {
-        type: Boolean,
-      },
-    },
+    tax_comp: [{ type: String }],
     sectors: [{ type: String }],
   },
   initial_data: [
