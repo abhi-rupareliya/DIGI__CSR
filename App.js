@@ -11,6 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 require('./Routes/AuthRoutes')(app)
+require('./Routes/ProfileRoutes')(app)
 app.listen(PORT, () => {
   console.log("Server listening...",);
 });

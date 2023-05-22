@@ -111,5 +111,3 @@ exports.VerifyCompany = async (req, res) => {
     });
   }
 };
-
-// exports.AddCompanyProfile = async (req, res) => {};
