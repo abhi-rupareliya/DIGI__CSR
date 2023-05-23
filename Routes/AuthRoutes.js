@@ -3,10 +3,6 @@ const {
   VerifyCompany,
 } = require("../Controllers/AuthController");
 const { NGOSignup, VerifyNGO } = require("../Controllers/AuthNGOController");
-const {
-  getCompanyProfile,
-} = require("../Controllers/CompanyProfileController");
-const {CompanyDetails} = require("../Controllers/CompanyProfileController");
 const {CompanyLogin , CompanyLoginVerify} = require("../Controllers/AuthController");
 
 const AuthRoutes = (app) => {
