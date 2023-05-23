@@ -98,7 +98,7 @@ exports.VerifyCompany = async (req, res) => {
       const newCompany = await new Company({ cin, email });
       await newCompany.save();
       const authToken = jwt.sign(
-        { _id: newCompany._id, cin: newCompany.cin, email: newCompany.email },
+        { _id: newCompany._id, email: newCompany.email },
         process.env.JWT_SEC
       );
       res.status(200).send({ success: true, result: authToken });
@@ -147,19 +147,17 @@ exports.CompanyLogin = async (req, res) => {
         res.status(200).send({ success: true, message: "OTP sent" });
       }
     });
-  }
-
-  catch (error) {
+  } catch (error) {
     res.status(400).send({
       success: false,
       message: "Error Sending OTP to your Mail.",
     });
   }
-}
+};
 
 exports.CompanyLoginVerify = async (req, res) => {
   try {
-    const {email, otp } = req.body;
+    const { email, otp } = req.body;
 
     const is_verified = speakeasy.totp.verify({
       secret: email + process.env.OTPSEC,
@@ -181,17 +179,12 @@ exports.CompanyLoginVerify = async (req, res) => {
       }
 
       const authToken = jwt.sign(
-        { _id: newCompany._id , email: newCompany.email },
+        { _id: exist._id, email: exist.email },
         process.env.JWT_SEC
       );
       res.status(200).send({ success: true, result: authToken });
-    }
-
-    else 
-    res.status(400).send({ success: false, message: "Wrong OTP" });
-  }
-  
-   catch (error) {
+    } else res.status(400).send({ success: false, message: "Wrong OTP" });
+  } catch (error) {
     console.warn(error);
     res.status(400).send({
       success: false,
