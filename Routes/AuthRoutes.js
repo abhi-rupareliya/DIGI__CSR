@@ -6,7 +6,6 @@ const { NGOSignup, VerifyNGO } = require("../Controllers/AuthNGOController");
 const {
   getCompanyProfile,
 } = require("../Controllers/CompanyProfileController");
-const {CompanyDetails} = require("../Controllers/AuthCompDetController");
 
 const AuthRoutes = (app) => {
   app.post("/company/signup", CompanySignup);
