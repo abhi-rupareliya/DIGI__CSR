@@ -14,7 +14,7 @@ const AuthRoutes = (app) => {
   app.post("/company/verify", VerifyCompany);
   app.post("/ngo/signup", NGOSignup);
   app.post("/ngo/verify", VerifyNGO);
-  app.get("/company/login", CompanyLogin);
-  app.get("/company/login/verify", CompanyLoginVerify);
+  app.post("/company/login", CompanyLogin);
+  app.post("/company/login/verify", CompanyLoginVerify);
 };
 module.exports = AuthRoutes;
