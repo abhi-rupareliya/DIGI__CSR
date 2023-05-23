@@ -3,6 +3,7 @@ const multer = require("multer");
 const {
   getCompanyProfile,
   AddCompanyProfile,
+  getCertificate,
 } = require("../Controllers/CompanyProfileController");
 
 const storage = multer.diskStorage({
@@ -18,6 +19,7 @@ const upload = multer({ storage: storage });
 
 const ProfileRoutes = (app) => {
   app.get("/company/profile/:id", getCompanyProfile);
+  app.get("/company/certificate/:id" , getCertificate)
   app.post(
     "/company/add-profile/:id",
     upload.single("registration_certificate"),

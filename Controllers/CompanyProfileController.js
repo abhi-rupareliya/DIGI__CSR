@@ -15,15 +15,6 @@ exports.getCompanyProfile = async (req, res) => {
         .json({ success: false, message: "Company not found." });
     }
 
-    // Convert the registration_certificate to a downloadable link or send as a response
-    let registrationCertificate = null;
-    if (company.profile.registration_certificate) {
-      registrationCertificate = {
-        filename: "registration_certificate.pdf", // You can specify the desired filename
-        data: company.profile.registration_certificate.toString("base64"),
-      };
-    }
-
     // Prepare the response data
     const responseData = {
       company_name: company.company_name,
@@ -41,17 +32,41 @@ exports.getCompanyProfile = async (req, res) => {
           cp_designation: company.profile.comunication_person.cp_designation,
           cp_phone: company.profile.comunication_person.cp_phone,
         },
-        registration_certificate: registrationCertificate,
         tax_comp: company.profile.tax_comp,
         sectors: company.profile.sectors,
       },
-      initial_data: company.initial_data,
     };
 
     res.status(200).json({
       success: true,
       data: responseData,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+exports.getCertificate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const company = await Company.findById(id);
+    if (!company) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found." });
+    }
+
+    const certificateBuffer = company.profile.registration_certificate;
+    if (!certificateBuffer) {
+      return res.status(404).json({
+        success: false,
+        message: "Registration certificate not found.",
+      });
+    }
+
+    res.set("Content-Type", "application/pdf");
+    res.send(certificateBuffer);
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error." });
