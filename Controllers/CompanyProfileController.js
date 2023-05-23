@@ -75,8 +75,6 @@ exports.AddCompanyProfile = async (req, res) => {
       sectors,
     } = req.body;
 
-    console.warn(req.body);
-
     let updatedFields = {
       company_name,
       "profile.location.city": city,
