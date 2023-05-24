@@ -36,7 +36,7 @@ const RFPSchema = mongoose.Schema({
         ref: "NGO",
       },
       amount: {
-        type: amount,
+        type: Number,
       },
       date: {
         type: Date,
