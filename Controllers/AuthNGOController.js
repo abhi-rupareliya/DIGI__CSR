@@ -32,7 +32,7 @@ exports.NGOSignup = async (req, res) => {
       });
     }
 
-    const exist = await CRN.findOne({
+    const exist = await NGO.findOne({
       $or: [{ csr: csr } , { email: email }],
     });
 
@@ -98,7 +98,7 @@ exports.VerifyNGO = async (req, res) => {
         const newNGO = await new NGO({ csr, email });
         await newNGO.save();
         const authToken = jwt.sign(
-          { _id: newNGO._id, csr: newNGO.csr, email: newNGO.email },
+          { _id: newNGO._id, csr: newNGO.csr },
           process.env.JWT_SEC
         );
         res.status(200).send({ success: true, result: authToken });
