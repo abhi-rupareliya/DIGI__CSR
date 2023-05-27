@@ -6,7 +6,7 @@ exports.getNGOProfile = async (req,res) => {
     const NGOId = req.params.id;
 
     // Retrieve the NGO document by its ID
-    const ngo = await NGO.findById(NGOId);
+    const ngo = await NGO.findById(NGOId).populate("profile.board_members");
 
     if (!ngo) {
       return res
@@ -21,17 +21,11 @@ exports.getNGOProfile = async (req,res) => {
 
       profile : {
         summary : ngo.profile.summary,
-        board_members : {
-          bm_name : ngo.profile.board_members.bm_name,
-          bm_gender : ngo.profile.board_members.bm_gender,
-          bm_din : ngo.profile.board_members.bm_din,
-          bm_phone : ngo.profile.board_members.bm_phone,
-          bm_designation : ngo.profile.board_members.bm_designation,
-        },
+        board_members : ngo.profile.board_members,
         csr_budget : ngo.profile.csr_budget,
         operation_area : ngo.profile.operation_area,
         sectors : ngo.profile.sectors,
-      }
+      },
     };
 
     res.status(200).json({
