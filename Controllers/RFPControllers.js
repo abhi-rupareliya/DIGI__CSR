@@ -35,23 +35,46 @@ exports.AddRfp = async (req, res) => {
 
 exports.getAllRfps = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
     const rfps = await RFP.find(
       {},
-      {
-        title: 1,
-        amount: 1,
-        remainingAmount: {
-          $subtract: ["$amount", { $sum: "$donations.amount" }],
-        },
-      }
-    );
-    res.status(200).json(rfps);
+      { title: 1, sectors: 1, states: 1, company: 1 }
+    )
+      .populate({ path: "company", select: "company_name" })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    let response = rfps.map((rfp) => ({
+      title: rfp.title,
+      sectors: rfp.sectors,
+      states: rfp.states,
+      company_name: rfp.company.company_name,
+    }));
+
+    res.status(200).json(response);
   } catch (error) {
+    console.warn(error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.getRFPDetails = async (req, res) => {
+  /**
+   * company name
+   * date of raise
+   * expiry date
+   * cp name
+   * cp email
+   * states of rfp
+   * sectors of rfp
+   * about company
+   * location of company in one
+   * sectors of company
+   */
   try {
     const id = req.params.id;
     const rfp = await RFP.findById(id);
