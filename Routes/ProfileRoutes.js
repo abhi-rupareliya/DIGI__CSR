@@ -9,7 +9,6 @@ const {
 const {
   getNGOProfile,
   AddNGOProfile,
-  getNGOCertificate,
 } = require("../Controllers/NGOProfileController");
 
 const storage = multer.diskStorage({
@@ -31,7 +30,7 @@ const ProfileRoutes = (app) => {
     upload.single("registration_certificate"),
     AddCompanyProfile
   );
-  // app.get("/NGO/profile/:id", getNGOProfile);
+  app.get("/NGO/profile/:id", getNGOProfile);
   // app.get("/NGO/certificate/:id" , getNGOCertificate);
   app.post(
     "/NGO/add-profile/:id",

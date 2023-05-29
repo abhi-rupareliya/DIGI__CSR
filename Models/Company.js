@@ -15,6 +15,11 @@ const CompanySchema = mongoose.Schema({
     unique: true,
   },
   profile: {
+
+    summary : {
+      type: String,
+    },
+
     location: {
       city: String,
       state: String,

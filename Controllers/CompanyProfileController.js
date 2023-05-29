@@ -20,6 +20,9 @@ exports.getCompanyProfile = async (req, res) => {
       company_name: company.company_name,
       email: company.email,
       profile: {
+
+        summary : company.profile.summary,
+
         location: {
           city: company.profile.location.city,
           state: company.profile.location.state,
@@ -77,6 +80,7 @@ exports.AddCompanyProfile = async (req, res) => {
     const companyId = req.params.id;
     const {
       company_name,
+      summary,
       city,
       state,
       pincode,
@@ -91,6 +95,7 @@ exports.AddCompanyProfile = async (req, res) => {
 
     let updatedFields = {
       company_name,
+      "company.profile.summary" : summary,
       "profile.location.city": city,
       "profile.location.state": state,
       "profile.location.pincode": pincode,
