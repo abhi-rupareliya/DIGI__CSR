@@ -1,5 +1,7 @@
-const Company = require("../Models/Company");
+require("dotenv").config({ path: "../.env" });
+const NGO = require("../Models/NGO");
 const RFP = require("../Models/RFP");
+const nodemailer = require("nodemailer");
 
 exports.AddRfp = async (req, res) => {
   try {
@@ -16,6 +18,7 @@ exports.AddRfp = async (req, res) => {
 
     const addedRFP = await newRFP.save();
     if (addedRFP) {
+      SendEmail(sectors, states, newRFP);
       return res.status(200).json({
         success: true,
         RFP: addedRFP,
@@ -33,34 +36,34 @@ exports.AddRfp = async (req, res) => {
   }
 };
 
-  exports.getAllRfps = async (req, res) => {
-    try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = 10;
-      const skip = (page - 1) * limit;
+exports.getAllRfps = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
-      const rfps = await RFP.find(
-        {},
-        { title: 1, sectors: 1, states: 1, company: 1 }
-      )
-        .populate({ path: "company", select: "company_name" })
-        .sort({ date: -1 })
-        .skip(skip)
-        .limit(limit);
+    const rfps = await RFP.find(
+      {},
+      { title: 1, sectors: 1, states: 1, company: 1 }
+    )
+      .populate({ path: "company", select: "company_name" })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
 
-      let response = rfps.map((rfp) => ({
-        title: rfp.title,
-        sectors: rfp.sectors,
-        states: rfp.states,
-        company_name: rfp.company.company_name,
-      }));
+    let response = rfps.map((rfp) => ({
+      title: rfp.title,
+      sectors: rfp.sectors,
+      states: rfp.states,
+      company_name: rfp.company.company_name,
+    }));
 
-      res.status(200).json(response);
-    } catch (error) {
-      console.warn(error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  };
+    res.status(200).json(response);
+  } catch (error) {
+    console.warn(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 exports.getRFPDetails = async (req, res) => {
   /**
@@ -88,5 +91,48 @@ exports.getRFPDetails = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Internal server error." });
+  }
+};
+
+const SendEmail = async (sectors, states, rfp) => {
+  try {
+    const ngos = await NGO.find({
+      "profile.sectors": { $in: sectors },
+      "profile.operation_area": { $in: states },
+    });
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: process.env.MAILER,
+        pass: process.env.EMAILPASS,
+      },
+    });
+
+    ngos.forEach((ngo) => {
+      const mailOptions = {
+        from: process.env.MAILER,
+        to: ngo.email,
+        subject: "New RFP Available",
+        text: `Dear ${
+          ngo.ngo_name
+        }, a new RFP is available in your state.\nTitle: ${
+          rfp.title
+        }\nAmount: ${rfp.amount}\nSectors: ${rfp.sectors.join(",")} `,
+      };
+
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Error sending emails to NGOs:", error);
   }
 };
