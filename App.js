@@ -14,6 +14,7 @@ app.use(express.json({ limit: "10mb" }));
 require("./Routes/AuthRoutes")(app);
 require("./Routes/ProfileRoutes")(app);
 require("./Routes/RFPRoutes")(app);
+require("./Routes/NotificationRoutes")(app);
 app.listen(PORT, () => {
   console.log("Server listening...");
 });

@@ -2,6 +2,7 @@ require("dotenv").config({ path: "../.env" });
 const NGO = require("../Models/NGO");
 const RFP = require("../Models/RFP");
 const nodemailer = require("nodemailer");
+const Notification = require("../Models/Notification");
 
 exports.AddRfp = async (req, res) => {
   try {
@@ -18,7 +19,8 @@ exports.AddRfp = async (req, res) => {
 
     const addedRFP = await newRFP.save();
     if (addedRFP) {
-      SendEmail(sectors, states, newRFP);
+      NotifyNgo(sectors, states, newRFP);
+      // CreateNotification(sectors, states, newRFP);
       return res.status(200).json({
         success: true,
         RFP: addedRFP,
@@ -94,13 +96,12 @@ exports.getRFPDetails = async (req, res) => {
   }
 };
 
-const SendEmail = async (sectors, states, rfp) => {
+const NotifyNgo = async (sectors, states, rfp) => {
   try {
     const ngos = await NGO.find({
       "profile.sectors": { $in: sectors },
       "profile.operation_area": { $in: states },
     });
-
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -111,6 +112,7 @@ const SendEmail = async (sectors, states, rfp) => {
         pass: process.env.EMAILPASS,
       },
     });
+    CreateNotification(ngos, rfp);
 
     ngos.forEach((ngo) => {
       const mailOptions = {
@@ -119,7 +121,7 @@ const SendEmail = async (sectors, states, rfp) => {
         subject: "New RFP Available",
         text: `Dear ${
           ngo.ngo_name
-        }, a new RFP is available in your state.\nTitle: ${
+        }, a new RFP is available in your operation area.\nTitle: ${
           rfp.title
         }\nAmount: ${rfp.amount}\nSectors: ${rfp.sectors.join(",")} `,
       };
@@ -128,11 +130,32 @@ const SendEmail = async (sectors, states, rfp) => {
         if (error) {
           console.log(error);
         } else {
-          console.log("Email sent: " + info.response);
+          // console.log("Email sent: " + info.response);
         }
       });
     });
   } catch (error) {
     console.error("Error sending emails to NGOs:", error);
+  }
+};
+
+const CreateNotification = async (ngos, rfp) => {
+  try {
+    let recipients = [];
+    for (const ngo of ngos) {
+      recipients.push(ngo._id);
+    }
+    const newNotification = new Notification({
+      content: `A new RFP ${
+        rfp.title
+      } is available in your operation area.Title: ${rfp.title}\nAmount: ${
+        rfp.amount
+      }\nSectors: ${rfp.sectors.join(",")}`,
+      recipients: recipients,
+    });
+
+    await newNotification.save();
+  } catch (error) {
+    console.log("Some error in creating notification ", error);
   }
 };
