@@ -143,7 +143,7 @@ const CreateNotification = async (ngos, rfp) => {
   try {
     let recipients = [];
     for (const ngo of ngos) {
-      recipients.push(ngo._id);
+      recipients.push({recipient:ngo._id});
     }
     const newNotification = new Notification({
       content: `A new RFP ${
