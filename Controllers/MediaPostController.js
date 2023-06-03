@@ -2,6 +2,50 @@ const MediaPost = require("../Models/MediaPost");
 
 //Create New Media Post
 
+exports.GetPostById = async (req, res) => {
+
+  const postId = req.params.id;
+
+  try {
+
+    const post = await MediaPost.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found !!" })
+    }
+
+    res.status(200).json({ success: true, postData: post });
+
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
+  }
+}
+
+exports.GetPosts = async (req, res) => {
+
+  const authorId = "647adc51282c59958e8cd069";
+
+  try {
+
+    const posts = await MediaPost.find({ author: authorId });
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "No posts found !!" })
+    }
+
+    res.status(200).json({ success: true, postsData: posts });
+
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
+  }
+}
+
 exports.CreatePost = async (req, res) => {
   try {
     const { title, content, author, mediaUrl } = req.body;
@@ -23,6 +67,7 @@ exports.CreatePost = async (req, res) => {
       .json({ success: false, message: "Internal server error." });
   }
 };
+
 exports.UpdatePost = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -74,6 +119,7 @@ exports.DeletePost = async (req, res) => {
 
     return res.status(200).json({ message: "Media post deleted successfully" });
   } catch (err) {
+    console.log(err);
     return res
       .status(500)
       .json({ success: false, message: "Internal server error." });

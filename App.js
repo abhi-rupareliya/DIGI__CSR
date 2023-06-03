@@ -21,5 +21,5 @@ require("./Routes/RFPRoutes")(app);
 require("./Routes/NotificationRoutes")(app);
 require("./Routes/MediaRoutes")(app);
 app.listen(PORT, () => {
-  console.log("Server listening...");
+  console.log(`Server listening on : http://localhost:${PORT}`);
 });
