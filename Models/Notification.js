@@ -13,7 +13,6 @@ const notificationSchema = new mongoose.Schema({
     {
       recipient: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "NGO",
         required: true,
       },
       read: {

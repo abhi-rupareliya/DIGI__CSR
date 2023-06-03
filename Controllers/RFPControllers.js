@@ -3,6 +3,7 @@ const NGO = require("../Models/NGO");
 const RFP = require("../Models/RFP");
 const nodemailer = require("nodemailer");
 const Notification = require("../Models/Notification");
+const Company = require("../Models/Company");
 
 exports.AddRfp = async (req, res) => {
   try {
@@ -20,7 +21,6 @@ exports.AddRfp = async (req, res) => {
     const addedRFP = await newRFP.save();
     if (addedRFP) {
       NotifyNgo(sectors, states, newRFP);
-      // CreateNotification(sectors, states, newRFP);
       return res.status(200).json({
         success: true,
         RFP: addedRFP,
@@ -96,6 +96,48 @@ exports.getRFPDetails = async (req, res) => {
   }
 };
 
+exports.acceptRFP = async (req, res) => {
+  const { rfpID, amount, ngoId } = req.body;
+
+  try {
+    let rfp = await RFP.findById(rfpID);
+    let ngo = await NGO.findById(ngoId);
+
+    if (!rfp) {
+      return res.status(404).json({ success: false, message: "RFP not found" });
+    }
+    if (!ngo) {
+      return res.status(404).json({ success: false, message: "NGO not found" });
+    }
+    if (
+      rfp.amount -
+        rfp.donations.reduce((total, donation) => total + donation.amount, 0) <
+      amount
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "RFP does not have sufficient amount.",
+      });
+    }
+
+    rfp.donations.push({
+      ngo: ngoId,
+      amount: amount,
+      date: Date.now(),
+    });
+
+    await rfp.save();
+
+    NotifyCompanyAcceptedRFP(rfp, ngo.ngo_name, amount);
+    return res
+      .status(200)
+      .json({ success: true, message: "Donation successful" });
+  } catch (error) {
+    console.error("Error donating to RFP:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 const NotifyNgo = async (sectors, states, rfp) => {
   try {
     const ngos = await NGO.find({
@@ -143,7 +185,7 @@ const CreateNotification = async (ngos, rfp) => {
   try {
     let recipients = [];
     for (const ngo of ngos) {
-      recipients.push({recipient:ngo._id});
+      recipients.push({ recipient: ngo._id });
     }
     const newNotification = new Notification({
       content: `A new RFP ${
@@ -157,5 +199,68 @@ const CreateNotification = async (ngos, rfp) => {
     await newNotification.save();
   } catch (error) {
     console.log("Some error in creating notification ", error);
+  }
+};
+
+const NotifyCompanyAcceptedRFP = async (rfp, ngo, amount) => {
+  try {
+    const company = await Company.findById(rfp.company);
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: process.env.MAILER,
+        pass: process.env.EMAILPASS,
+      },
+    });
+    // CreateNotification(ngos, rfp);
+
+    const mailOptions = {
+      from: process.env.MAILER,
+      to: company.email,
+      subject: "NGO Acceptance of RFP.",
+      text: `Dear ${company.company_name},
+
+      An NGO ${ngo} has accepted your RFP. 
+      Below are the details of the RFP:
+      
+      Title: ${rfp.title}
+      Accepted Amount: ${amount}
+      Sectors: ${rfp.sectors.join(", ")}
+      `,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    // creating notification for comapany
+    const newNotification = new Notification({
+      content: `
+      An NGO ${ngo} has accepted your RFP. 
+      Below are the details of the RFP:
+      
+      Title: ${rfp.title}
+      Accepted Amount: ${amount}
+      Sectors: ${rfp.sectors.join(", ")}
+      `,
+      recipients: [
+        {
+          recipient: rfp.company,
+          read: false,
+        },
+      ],
+    });
+
+    await newNotification.save();
+  } catch (error) {
+    console.error("Error notifying to Company:", error);
   }
 };
