@@ -2,96 +2,80 @@ const MediaPost = require("../Models/MediaPost");
 
 //Create New Media Post
 
-exports.CreatePost = (req, res) => {
-    try {
-        const {
-            title,
-            content,
-            author,
-            mediaUrl,
-        } = req.body;
+exports.CreatePost = async (req, res) => {
+  try {
+    const { title, content, author, mediaUrl } = req.body;
 
-        const loggedInNGO = req.user;
+    const newMediaPost = new MediaPost({
+      title,
+      content,
+      author,
+      mediaUrl,
+    });
 
-        const newMediaPost = new MediaPost({
-            title,
-            content,
-            author,
-            mediaUrl,
-        });
+    const createdMediaPost = await newMediaPost.save();
 
-        newMediaPost.save((err, data) => {
-            if (err) {
-                console.error(err);
-                return res.status(404).json({ Error: "Failed to create Post" });
-            }
+    return res.status(200).json(createdMediaPost);
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
+  }
+};
+exports.UpdatePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const { title, content, mediaUrl } = req.body;
 
-            return res.status(200).json(data);
-        });
-    } catch (err) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Internal server error." });
+    const media = await MediaPost.findById(postId);
+
+    if (!media) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post Not Found." });
     }
+
+    if (title) {
+      media.title = title;
+    }
+
+    if (content) {
+      media.content = content;
+    }
+
+    if (mediaUrl) {
+      media.mediaUrl = mediaUrl;
+    }
+
+    media.updatedAt = Date.now();
+
+    const updatedMedia = await media.save();
+
+    return res.status(200).json(updatedMedia);
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
+  }
 };
 
-//Update Media Post
+exports.DeletePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
 
-exports.UpdatePost = (req, res) => {
-    try {
-        const postId = req.params.id;
-        const {
-            title,
-            content,
-            mediaUrl
-        } = req.body;
+    const deletedMedia = await MediaPost.findByIdAndDelete(postId);
 
-        const media = MediaPost.findById(postId);
-
-        if (!media) {
-            return res
-                .status(404)
-                .json({ success: false, message: "Post Not Found." });
-        }
-
-        media.title = title;
-        media.content = content;
-        media.mediaUrl = mediaUrl;
-        media.updatedAt = Date.now();
-
-        media.save((err, data) => {
-            if (err) {
-                console.error(err);
-                return res.status(404).json({ Error: "Error in Update Media" });
-            }
-
-            return res.status(200).json(data);
-        });
-    } catch (err) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Internal server error." });
+    if (!deletedMedia) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Media post not found" });
     }
-};
 
-//Delete Media Post
-
-exports.DeletePost = (req, res) => {
-    try {
-        const postId = req.params.id;
-
-        MediaPost.findByIdAndDelete(postId, (err, data) => {
-            if (err) {
-                console.error(err);
-                return res.status(404).json({ Error: "Error in Delete Media" });
-            }
-
-            if (!data) {
-                return res.status(404).json({ error: "Media post not found" });
-            }
-
-            return res.status(200).json({ message: "Media post deleted successfully" });
-        });
-    } catch (err) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Internal server error." });
-    }
+    return res.status(200).json({ message: "Media post deleted successfully" });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
+  }
 };

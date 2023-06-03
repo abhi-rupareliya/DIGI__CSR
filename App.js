@@ -15,6 +15,7 @@ require("./Routes/AuthRoutes")(app);
 require("./Routes/ProfileRoutes")(app);
 require("./Routes/RFPRoutes")(app);
 require("./Routes/NotificationRoutes")(app);
+require("./Routes/MediaRoutes")(app);
 app.listen(PORT, () => {
   console.log("Server listening...");
 });
