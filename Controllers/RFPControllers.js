@@ -4,6 +4,7 @@ const NGO = require("../Models/NGO");
 const RFP = require("../Models/RFP");
 const Notification = require("../Models/Notification");
 const Company = require("../Models/Company");
+const sendMail = require("../Services/mailService");
 
 exports.AddRfp = async (req, res) => {
   try {
@@ -101,11 +102,15 @@ exports.getRFPDetails = async (req, res) => {
 };
 
 exports.acceptRFP = async (req, res) => {
-  const { rfpID, amount, ngoId } = req.body;
-  if (req.userType !== "ngo") {
-    return res.status(400).send({ success: false, message: "Not Authorized." });
-  }
   try {
+    const { rfpID, amount } = req.body;
+    if (req.userType !== "ngo") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const ngoId = req.user._id;
+    console.warn(ngoId);
     let rfp = await RFP.findById(rfpID);
     let ngo = await NGO.findById(ngoId);
 
@@ -152,7 +157,7 @@ exports.getRFP = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const id = req.params.id;
-    const rfp = await RFP.findOne({ _id: id }, { donations: 0 });
+    const rfp = await RFP.findOne({ _id: id });
 
     if (!rfp) {
       return res
@@ -209,54 +214,20 @@ const NotifyNgo = async (sectors, states, rfp) => {
       "profile.operation_area": { $in: states },
     });
 
-    // const transporter = nodemailer.createTransport({
-    //   host: "smtp.gmail.com",
-    //   port: 587,
-    //   secure: false,
-    //   requireTLS: true,
-    //   auth: {
-    //     user: process.env.MAILER,
-    //     pass: process.env.EMAILPASS,
-    //   },
-    // });
-
     CreateNotification(ngos, rfp);
 
-    ngos.forEach(async (ngo) => {
-      // const mailOptions = {
-      //   from: process.env.MAILER,
-      //   to: ngo.email,
-      //   subject: "New RFP Available",
-      //   text: `Dear ${
-      //     ngo.ngo_name
-      //   }, a new RFP is available in your operation area.\nTitle: ${
-      //     rfp.title
-      //   }\nAmount: ${rfp.amount}\nSectors: ${rfp.sectors.join(",")} `,
-      // };
-
-      // transporter.sendMail(mailOptions, function (error, info) {
-      //   if (error) {
-      //     console.log(error);
-      //   } else {
-      //     // console.log("Email sent: " + info.response);
-      //   }
-      // });
-
+    for (const ngo of ngos) {
       const text = `Dear ${
         ngo.ngo_name
       }, a new RFP is available in your operation area.\nTitle: ${
         rfp.title
       }\nAmount: ${rfp.amount}\nSectors: ${rfp.sectors.join(",")} `;
-
       try {
         const mailRes = await sendMail(ngo.email, "New RFP Available", text);
-        console.log("Email response:", mailRes);
-        res.status(200).send({ success: true, message: "OTP sent" });
       } catch (error) {
         console.error("Error sending email:", error);
-        res.status(500).json({ success: false, message: "Error sending Mail" });
       }
-    });
+    }
   } catch (error) {
     console.error("Error sending emails to NGOs:", error);
   }
@@ -286,42 +257,6 @@ const CreateNotification = async (ngos, rfp) => {
 const NotifyCompanyAcceptedRFP = async (rfp, ngo, amount) => {
   try {
     const company = await Company.findById(rfp.company);
-
-    // const transporter = nodemailer.createTransport({
-    //   host: "smtp.gmail.com",
-    //   port: 587,
-    //   secure: false,
-    //   requireTLS: true,
-    //   auth: {
-    //     user: process.env.MAILER,
-    //     pass: process.env.EMAILPASS,
-    //   },
-    // });
-    // // CreateNotification(ngos, rfp);
-
-    // const mailOptions = {
-    //   from: process.env.MAILER,
-    //   to: company.email,
-    //   subject: "NGO Acceptance of RFP.",
-    //   text: `Dear ${company.company_name},
-
-    //   An NGO ${ngo} has accepted your RFP.
-    //   Below are the details of the RFP:
-
-    //   Title: ${rfp.title}
-    //   Accepted Amount: ${amount}
-    //   Sectors: ${rfp.sectors.join(", ")}
-    //   `,
-    // };
-
-    // transporter.sendMail(mailOptions, function (error, info) {
-    //   if (error) {
-    //     console.log(error);
-    //   } else {
-    //     console.log("Email sent: " + info.response);
-    //   }
-    // });
-
     const text = `Dear ${company.company_name},
       An NGO ${ngo} has accepted your RFP. 
       Below are the details of the RFP:
@@ -335,11 +270,8 @@ const NotifyCompanyAcceptedRFP = async (rfp, ngo, amount) => {
         "NGO Accepted the RFP.",
         text
       );
-      console.log("Email response:", mailRes);
-      res.status(200).send({ success: true, message: "OTP sent" });
     } catch (error) {
       console.error("Error sending email:", error);
-      res.status(500).json({ success: false, message: "Error sending Mail" });
     }
 
     // creating notification for comapany
