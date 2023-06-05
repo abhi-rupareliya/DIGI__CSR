@@ -66,6 +66,7 @@ exports.getAllRfps = async (req, res) => {
       .limit(limit);
 
     let response = rfps.map((rfp) => ({
+      _id: rfp._id,
       title: rfp.title,
       sectors: rfp.sectors,
       states: rfp.states,
@@ -194,7 +195,7 @@ exports.getRfpOfCompany = async (req, res) => {
     const companyId = req.user._id;
     const rfps = await RFP.find(
       { company: companyId },
-      { title: 1, sectors: 1, states: 1 }
+      { _id: 1, title: 1, sectors: 1, states: 1 }
     )
       .sort({ date: -1 })
       .skip(skip)
