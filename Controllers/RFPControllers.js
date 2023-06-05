@@ -1,4 +1,5 @@
 require("dotenv").config({ path: "../.env" });
+const mongoose = require("mongoose");
 const NGO = require("../Models/NGO");
 const RFP = require("../Models/RFP");
 const Notification = require("../Models/Notification");
@@ -6,7 +7,13 @@ const Company = require("../Models/Company");
 
 exports.AddRfp = async (req, res) => {
   try {
-    const { title, amount, timeline, sectors, states, company } = req.body;
+    if (req.userType !== "company") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const { title, amount, timeline, sectors, states } = req.body;
+    const company = req.user._id;
     const newRFP = new RFP({
       title,
       amount,
@@ -39,6 +46,11 @@ exports.AddRfp = async (req, res) => {
 
 exports.getAllRfps = async (req, res) => {
   try {
+    if (req.userType !== "ngo") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
@@ -67,21 +79,14 @@ exports.getAllRfps = async (req, res) => {
 };
 
 exports.getRFPDetails = async (req, res) => {
-  /**
-   * company name
-   * date of raise
-   * expiry date
-   * cp name
-   * cp email
-   * states of rfp
-   * sectors of rfp
-   * about company
-   * location of company in one
-   * sectors of company
-   */
   try {
+    if (req.userType !== "ngo") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
     const id = req.params.id;
-    const rfp = await RFP.findById(id);
+    const rfp = await RFP.find({ _id: id }, { donations: 0 });
     if (!rfp) {
       return res
         .status(404)
@@ -97,7 +102,9 @@ exports.getRFPDetails = async (req, res) => {
 
 exports.acceptRFP = async (req, res) => {
   const { rfpID, amount, ngoId } = req.body;
-
+  if (req.userType !== "ngo") {
+    return res.status(400).send({ success: false, message: "Not Authorized." });
+  }
   try {
     let rfp = await RFP.findById(rfpID);
     let ngo = await NGO.findById(ngoId);
@@ -110,7 +117,7 @@ exports.acceptRFP = async (req, res) => {
     }
     if (
       rfp.amount -
-      rfp.donations.reduce((total, donation) => total + donation.amount, 0) <
+        rfp.donations.reduce((total, donation) => total + donation.amount, 0) <
       amount
     ) {
       return res.status(400).json({
@@ -137,13 +144,49 @@ exports.acceptRFP = async (req, res) => {
   }
 };
 
+exports.getRFP = async (req, res) => {
+  try {
+    if (req.userType !== "company") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const id = req.params.id;
+    const rfp = await RFP.findOne({ _id: id }, { donations: 0 });
+
+    if (!rfp) {
+      return res
+        .status(404)
+        .json({ success: false, message: "RFP not found." });
+    }
+
+    if (!rfp.company.equals(req.user._id)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized to see this RFP." });
+    }
+
+    return res.status(200).json({ success: true, rfp });
+  } catch (error) {
+    console.warn(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
+  }
+};
+
 exports.getRfpOfCompany = async (req, res) => {
   try {
+    if (req.userType !== "company") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    const companyId = req.body.params;
+    const companyId = req.user._id;
     const rfps = await RFP.find(
       { company: companyId },
       { title: 1, sectors: 1, states: 1 }
@@ -199,18 +242,20 @@ const NotifyNgo = async (sectors, states, rfp) => {
       //   }
       // });
 
-
-      const text = `Dear ${ngo.ngo_name}, a new RFP is available in your operation area.\nTitle: ${rfp.title}\nAmount: ${rfp.amount}\nSectors: ${rfp.sectors.join(",")} `;
+      const text = `Dear ${
+        ngo.ngo_name
+      }, a new RFP is available in your operation area.\nTitle: ${
+        rfp.title
+      }\nAmount: ${rfp.amount}\nSectors: ${rfp.sectors.join(",")} `;
 
       try {
         const mailRes = await sendMail(ngo.email, "New RFP Available", text);
-        console.log('Email response:', mailRes);
-        res.status(200).send({ success: true, message: 'OTP sent' });
+        console.log("Email response:", mailRes);
+        res.status(200).send({ success: true, message: "OTP sent" });
       } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ success: false, message: 'Error sending Mail' });
+        console.error("Error sending email:", error);
+        res.status(500).json({ success: false, message: "Error sending Mail" });
       }
-
     });
   } catch (error) {
     console.error("Error sending emails to NGOs:", error);
@@ -224,9 +269,11 @@ const CreateNotification = async (ngos, rfp) => {
       recipients.push({ recipient: ngo._id });
     }
     const newNotification = new Notification({
-      content: `A new RFP ${rfp.title
-        } is available in your operation area.Title: ${rfp.title}\nAmount: ${rfp.amount
-        }\nSectors: ${rfp.sectors.join(",")}`,
+      content: `A new RFP ${
+        rfp.title
+      } is available in your operation area.Title: ${rfp.title}\nAmount: ${
+        rfp.amount
+      }\nSectors: ${rfp.sectors.join(",")}`,
       recipients: recipients,
     });
 
@@ -258,7 +305,7 @@ const NotifyCompanyAcceptedRFP = async (rfp, ngo, amount) => {
     //   subject: "NGO Acceptance of RFP.",
     //   text: `Dear ${company.company_name},
 
-    //   An NGO ${ngo} has accepted your RFP. 
+    //   An NGO ${ngo} has accepted your RFP.
     //   Below are the details of the RFP:
 
     //   Title: ${rfp.title}
@@ -283,14 +330,17 @@ const NotifyCompanyAcceptedRFP = async (rfp, ngo, amount) => {
       Sectors: ${rfp.sectors.join(", ")}`;
 
     try {
-      const mailRes = await sendMail(company.email, "NGO Accepted the RFP.", text);
-      console.log('Email response:', mailRes);
-      res.status(200).send({ success: true, message: 'OTP sent' });
+      const mailRes = await sendMail(
+        company.email,
+        "NGO Accepted the RFP.",
+        text
+      );
+      console.log("Email response:", mailRes);
+      res.status(200).send({ success: true, message: "OTP sent" });
     } catch (error) {
-      console.error('Error sending email:', error);
-      res.status(500).json({ success: false, message: 'Error sending Mail' });
+      console.error("Error sending email:", error);
+      res.status(500).json({ success: false, message: "Error sending Mail" });
     }
-
 
     // creating notification for comapany
     const newNotification = new Notification({
