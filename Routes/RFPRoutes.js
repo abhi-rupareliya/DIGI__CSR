@@ -10,7 +10,7 @@ const RFPRoutes = (app) => {
   app.get("/rfps", getAllRfps);
   app.get("/rfp-details/:id", getRFPDetails);
   app.put("/accept-rfp", acceptRFP);
-  app.get("/company/rfp", getRfpOfCompany);
+  app.get("/company/rfp/:id", getRfpOfCompany);
 };
 
 module.exports = RFPRoutes;

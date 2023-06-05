@@ -143,7 +143,7 @@ exports.getRfpOfCompany = async (req, res) => {
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    const companyId = req.body.id;
+    const companyId = req.body.params;
     const rfps = await RFP.find(
       { company: companyId },
       { title: 1, sectors: 1, states: 1 }
