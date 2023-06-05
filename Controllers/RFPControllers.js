@@ -138,6 +138,28 @@ exports.acceptRFP = async (req, res) => {
   }
 };
 
+exports.getRfpOfCompany = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const companyId = req.body.id;
+    const rfps = await RFP.find(
+      { company: companyId },
+      { title: 1, sectors: 1, states: 1 }
+    )
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json(rfps);
+  } catch (error) {
+    console.error("Error retrieving RFPs:", error);
+    res.status(500).json({ error: "An error occurred while retrieving RFPs." });
+  }
+};
+
 const NotifyNgo = async (sectors, states, rfp) => {
   try {
     const ngos = await NGO.find({
