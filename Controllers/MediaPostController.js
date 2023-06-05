@@ -26,23 +26,24 @@ exports.GetPostById = async (req, res) => {
 
 exports.GetPosts = async (req, res) => {
 
-  const authorId = "647adc51282c59958e8cd069";
+
+  const authorId = req.LoggedEntity._id;
+
+  console.log(req.LoggedEntity.type);
 
   try {
 
     const posts = await MediaPost.find({ author: authorId });
 
-    if (!post) {
+    if (!posts) {
       return res.status(404).json({ success: false, message: "No posts found !!" })
     }
 
-    res.status(200).json({ success: true, postsData: posts });
+    return res.status(200).json({ success: true, postsData: posts });
 
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
+    res.status(500).json({ success: false, message: "Internal server error." });
   }
 }
 

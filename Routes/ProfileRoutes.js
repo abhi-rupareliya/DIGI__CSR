@@ -24,7 +24,7 @@ const upload = multer({ storage: storage });
 
 const ProfileRoutes = (app) => {
   app.get("/company/profile/:id", getCompanyProfile);
-  app.get("/company/certificate/:id" , getCertificate);
+  app.get("/company/certificate/:id", getCertificate);
   app.post(
     "/company/add-profile/:id",
     upload.single("registration_certificate"),
