@@ -31,15 +31,15 @@ exports.NGOSignup = async (req, res) => {
       });
     }
 
-
     try {
-      await sendOTP(email);
-      res.status(200).send({ success: true, message: 'OTP sent' });
+      sendOTP(email);
+      res.status(200).send({ success: true, message: "OTP sent" });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ success: false, message: 'Error sending OTP !!!' });
+      res
+        .status(500)
+        .json({ success: false, message: "Error sending OTP !!!" });
     }
-
   } catch (error) {
     res.status(400).send({
       success: false,
@@ -71,10 +71,10 @@ exports.VerifyNGO = async (req, res) => {
       const payload = {
         _id: newNGO._id,
         email: newNGO.email,
-        type: "NGO"
-      }
+        type: "NGO",
+      };
 
-      const authToken = genToken(payload);
+      const authToken = genTocken(payload);
 
       res.status(200).send({ success: true, result: authToken });
     } else res.status(400).send({ success: false, message: "Wrong OTP" });
@@ -101,13 +101,14 @@ exports.NGOLogin = async (req, res) => {
     }
 
     try {
-      await sendOTP(email);
-      res.status(200).send({ success: true, message: 'OTP sent' });
+      sendOTP(email);
+      res.status(200).send({ success: true, message: "OTP sent" });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ success: false, message: 'Error sending OTP !!!' });
+      res
+        .status(500)
+        .json({ success: false, message: "Error sending OTP !!!" });
     }
-
   } catch (error) {
     res.status(400).send({
       success: false,
@@ -137,8 +138,8 @@ exports.NGOLoginVerify = async (req, res) => {
       const payload = {
         _id: ngo._id,
         email: ngo.email,
-        type: "NGO"
-      }
+        type: "NGO",
+      };
 
       const authToken = genToken(payload);
 

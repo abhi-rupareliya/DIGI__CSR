@@ -2,6 +2,7 @@ require("dotenv").config({ path: "../.env" });
 const Beneficiary = require('../Models/Beneficiary');
 const jwt = require("jsonwebtoken");
 const { sendOTP, verifyOTP } = require("../Services/otpService");
+const genToken = require("../Services/jwtTokenService")
 
 exports.BeneficiarySignup = async (req, res) => {
   try {
