@@ -126,3 +126,14 @@ exports.DeletePost = async (req, res) => {
       .json({ success: false, message: "Internal server error." });
   }
 };
+
+exports.uploadFile = (req, res) => {
+
+  if (!req.fileUrl) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' });
+  }
+
+  const fileUrl = req.fileUrl;
+  return res.status(200).json({ success: true, message: 'File uploaded successfully', url: fileUrl });
+
+}

@@ -1,7 +1,7 @@
 require("dotenv").config({ path: "../.env" });
 const NGO = require("../Models/NGO");
 const CRN = require("../Models/CRN");
-const jwt = require("jsonwebtoken");
+const genToken = require("../Services/jwtTokenService")
 const { sendOTP, verifyOTP } = require("../Services/otpService");
 
 exports.NGOSignup = async (req, res) => {
@@ -33,7 +33,7 @@ exports.NGOSignup = async (req, res) => {
 
 
     try {
-      sendOTP(email);
+      await sendOTP(email);
       res.status(200).send({ success: true, message: 'OTP sent' });
     } catch (error) {
       console.log(error);
@@ -65,13 +65,8 @@ exports.VerifyNGO = async (req, res) => {
           message: "NGO with this CSR, name or email already exists.",
         });
       }
-      const newNGO = await new NGO({ csr, email });
+      const newNGO = new NGO({ csr, email });
       await newNGO.save();
-
-      // const authToken = jwt.sign(
-      //   { _id: newNGO._id, csr: newNGO.csr },
-      //   process.env.JWT_SEC
-      // );
 
       const payload = {
         _id: newNGO._id,
@@ -106,7 +101,7 @@ exports.NGOLogin = async (req, res) => {
     }
 
     try {
-      sendOTP(email);
+      await sendOTP(email);
       res.status(200).send({ success: true, message: 'OTP sent' });
     } catch (error) {
       console.log(error);
@@ -138,11 +133,6 @@ exports.NGOLoginVerify = async (req, res) => {
           message: "NGO with this email not exists.",
         });
       }
-
-      // const authToken = jwt.sign(
-      //   { _id: ngo._id, email: ngo.email },
-      //   process.env.JWT_SEC
-      // );
 
       const payload = {
         _id: ngo._id,

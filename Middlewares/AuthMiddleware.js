@@ -12,8 +12,6 @@ module.exports = async (req, res, next) => {
   }
 
   try {
-
-
     const { _id, type } = jwt.verify(token, jwt_sec);
 
     console.log("_id: " + _id + ' type: ' + type);

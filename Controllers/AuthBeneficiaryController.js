@@ -19,7 +19,7 @@ exports.BeneficiarySignup = async (req, res) => {
     }
 
     try {
-      sendOTP(email);
+      await sendOTP(email);
       res.status(200).send({ success: true, message: 'OTP sent' });
     } catch (error) {
       console.log(error);
@@ -54,12 +54,6 @@ exports.VerifyBeneficiary = async (req, res) => {
 
       const newBeneficiary = await new Beneficiary({ name, email, mobile_no, aadhar_no });
       await newBeneficiary.save();
-
-      // const authToken = jwt.sign(
-      //   { _id: newBeneficiary._id, email: newBeneficiary.email },
-      //   process.env.JWT_SEC
-      // );
-
 
       const payload = {
         _id: newBeneficiary._id,
@@ -97,7 +91,7 @@ exports.BeneficiaryLogin = async (req, res) => {
 
 
     try {
-      sendOTP(email);
+      await sendOTP(email);
       res.status(200).send({ success: true, message: 'OTP sent' });
     } catch (error) {
       console.log(error);
@@ -129,11 +123,6 @@ exports.BeneficiaryLoginVerify = async (req, res) => {
           message: "Beneficiary with this email not exists.",
         });
       }
-
-      // const authToken = jwt.sign(
-      //   { _id: Beneficiary._id, email: Beneficiary.email },
-      //   process.env.JWT_SEC
-      // );
 
       const payload = {
         _id: Beneficiary._id,
