@@ -15,24 +15,6 @@ const upload = multer({ storage });
 
 const fileUploaderMiddleware = (req, res, next) => {
 
-
-    // if (!req.file) {
-    //     return res.status(400).json({ success: false, message: 'No file uploaded' });
-    // }
-
-
-    // upload.single('file')(req, res, err => {
-    //     if (err) {
-    //         return res.status(400).json({ success: false, message: 'File upload failed' });
-    //     }
-
-    //     // File uploaded successfully
-    //     const fileUrl = `http://locahost:4000/uploads/${req.file.originalname}`;
-    //     req.fileUrl = fileUrl;
-    //     next();
-    // });
-
-
     upload.single('file')(req, res, err => {
         if (err) {
             return res.status(400).json({ success: false, message: 'File upload failed' });
