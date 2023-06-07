@@ -87,15 +87,42 @@ exports.getRFPDetails = async (req, res) => {
         .status(400)
         .send({ success: false, message: "Not Authorized." });
     }
+
     const id = req.params.id;
-    const rfp = await RFP.find({ _id: id }, { donations: 0 });
+
+    const rfp = await RFP.findOne({ _id: id }, { donations: 0, __v: 0 });
+
     if (!rfp) {
       return res
         .status(404)
         .json({ success: false, message: "RFP not found." });
     }
-    return res.status(200).json({ success: true, rfp });
+
+    const companyId = rfp.company;
+    const company = await Company.findOne(
+      { _id: companyId },
+      {
+        company_name: 1,
+        "profile.comunication_person.cp_name": 1,
+        "profile.comunication_person.cp_email": 1,
+        "profile.location": 1,
+        "profile.summary": 1,
+        "profile.sectors": 1,
+      }
+    );
+
+    if (!company) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found." });
+    }
+    const resp = {
+      rfp,
+      company,
+    };
+    return res.status(200).json({ success: true, data: resp });
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
       .json({ success: false, message: "Internal server error." });
@@ -158,21 +185,35 @@ exports.getRFP = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const id = req.params.id;
-    const rfp = await RFP.findOne({ _id: id });
-
+    const rfp = await RFP.findOne({ _id: id }).populate(
+      "donations.ngo",
+      "ngo_name"
+    );
     if (!rfp) {
       return res
         .status(404)
         .json({ success: false, message: "RFP not found." });
     }
-
     if (!rfp.company.equals(req.user._id)) {
       return res
         .status(403)
         .json({ success: false, message: "Unauthorized to see this RFP." });
     }
+    // to replace _id with ngo_name
+    const transformedDonations = rfp.donations.map((donation) => ({
+      nogId: donation.ngo._id,
+      ngo: donation.ngo.ngo_name,
+      amount: donation.amount,
+      date: donation.date,
+    }));
 
-    return res.status(200).json({ success: true, rfp });
+    // Replace the donations array in the response with the transformedDonations
+    const response = {
+      ...rfp.toObject(),
+      donations: transformedDonations,
+    };
+
+    return res.status(200).json({ success: true, rfp: response });
   } catch (error) {
     console.warn(error);
     return res
