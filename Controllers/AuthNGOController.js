@@ -1,7 +1,7 @@
 require("dotenv").config({ path: "../.env" });
 const NGO = require("../Models/NGO");
 const CRN = require("../Models/CRN");
-const genToken = require("../Services/jwtTokenService");
+const genToken = require("../Services/jwtTokenService")
 const { sendOTP, verifyOTP } = require("../Services/otpService");
 
 exports.NGOSignup = async (req, res) => {
@@ -65,13 +65,8 @@ exports.VerifyNGO = async (req, res) => {
           message: "NGO with this CSR, name or email already exists.",
         });
       }
-      const newNGO = await new NGO({ csr, email });
+      const newNGO = new NGO({ csr, email });
       await newNGO.save();
-
-      // const authToken = jwt.sign(
-      //   { _id: newNGO._id, csr: newNGO.csr },
-      //   process.env.JWT_SEC
-      // );
 
       const payload = {
         _id: newNGO._id,
@@ -139,11 +134,6 @@ exports.NGOLoginVerify = async (req, res) => {
           message: "NGO with this email not exists.",
         });
       }
-
-      // const authToken = jwt.sign(
-      //   { _id: ngo._id, email: ngo.email },
-      //   process.env.JWT_SEC
-      // );
 
       const payload = {
         _id: ngo._id,

@@ -17,9 +17,9 @@ exports.sendOTP = async (email) => {
     try {
         const mailRes = await sendMail(email, 'OTP verification', 'Your One-time password is: ' + otp);
         console.log('Email response:', mailRes);
-        return
+        return mailRes;
     } catch (error) {
-        console.error('Error sending email:', error);
+        // console.error('Error sending email:', error);
         throw error;
     }
 }
