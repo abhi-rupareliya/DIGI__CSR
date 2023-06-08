@@ -32,7 +32,7 @@ exports.NGOSignup = async (req, res) => {
     }
 
     try {
-      sendOTP(email);
+      await sendOTP(email);
       res.status(200).send({ success: true, message: "OTP sent" });
     } catch (error) {
       console.log(error);
@@ -101,7 +101,7 @@ exports.NGOLogin = async (req, res) => {
     }
 
     try {
-      sendOTP(email);
+      await sendOTP(email);
       res.status(200).send({ success: true, message: "OTP sent" });
     } catch (error) {
       console.log(error);

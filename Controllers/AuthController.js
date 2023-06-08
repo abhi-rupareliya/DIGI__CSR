@@ -68,10 +68,6 @@ exports.VerifyCompany = async (req, res) => {
       const newCompany = await new Company({ cin, email });
       await newCompany.save();
 
-      // const authToken = jwt.sign(
-      //   { _id: newCompany._id, email: newCompany.email },
-      //   process.env.JWT_SEC
-      // );
       const payload = {
         _id: newCompany._id,
         email: newCompany.email,
@@ -137,11 +133,6 @@ exports.CompanyLoginVerify = async (req, res) => {
           message: "Company with this email not exists.",
         });
       }
-
-      // const authToken = jwt.sign(
-      //   { _id: company._id, email: company.email },
-      //   process.env.JWT_SEC
-      // );
 
       const payload = {
         _id: company._id,

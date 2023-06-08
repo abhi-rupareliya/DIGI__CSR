@@ -45,13 +45,21 @@ exports.GetPosts = async (req, res) => {
 
 exports.CreatePost = async (req, res) => {
   try {
-    const { title, content, author, mediaUrl } = req.body;
+
+    if (req.userType !== "ngo") {
+      return res
+        .status(401)
+        .send({ success: false, message: "Not Authorized." });
+    }
+
+    const user = req.user;
+
+    const { title, content } = req.body;
 
     const newMediaPost = new MediaPost({
       title,
       content,
-      author,
-      mediaUrl,
+      author: user._id
     });
 
     const createdMediaPost = await newMediaPost.save();
