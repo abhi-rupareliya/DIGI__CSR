@@ -4,11 +4,13 @@ const {
   getCompanyProfile,
   AddCompanyProfile,
   getCertificate,
+  getCompanyLogo,
 } = require("../Controllers/CompanyProfileController");
 
 const {
   getNGOProfile,
   AddNGOProfile,
+  getNgoLogo,
 } = require("../Controllers/NGOProfileController");
 
 const storage = multer.diskStorage({
@@ -25,6 +27,7 @@ const upload = multer({ storage: storage });
 const ProfileRoutes = (app) => {
   app.get("/company/profile/:id", getCompanyProfile);
   app.get("/company/certificate/:id", getCertificate);
+  app.get("/company/logo/:id", getCompanyLogo);
   app.post(
     "/company/add-profile/:id",
     upload.fields([
@@ -34,13 +37,10 @@ const ProfileRoutes = (app) => {
     AddCompanyProfile
   );
   app.get("/NGO/profile/:id", getNGOProfile);
-  // app.get("/NGO/certificate/:id" , getNGOCertificate);
+  app.get("/NGO/logo/:id", getNgoLogo);
   app.post(
     "/NGO/add-profile/:id",
-    upload.fields([
-      { name: "NGO_certificate", maxCount: 1 },
-      { name: "company_logo", maxCount: 1 },
-    ]),
+    upload.fields([{ name: "ngo_logo", maxCount: 1 }]),
     AddNGOProfile
   );
 };

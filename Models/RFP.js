@@ -8,6 +8,9 @@ const RFPSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
+  remaining_amount: {
+    type: Number,
+  },
   sectors: [
     {
       type: String,

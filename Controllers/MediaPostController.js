@@ -24,12 +24,11 @@ exports.GetPostById = async (req, res) => {
 };
 
 exports.GetPosts = async (req, res) => {
-  const authorId = req.user._id;
-
-  console.log(req.userType);
-
   try {
-    const posts = await MediaPost.find({ author: authorId });
+       // const authorId = req.user._id;
+    // console.warn(req.user);
+    // console.log(req.userType);
+    const posts = await MediaPost.find();
 
     if (!posts) {
       return res
@@ -125,12 +124,18 @@ exports.DeletePost = async (req, res) => {
 };
 
 exports.uploadFile = (req, res) => {
-
   if (!req.fileUrl) {
-    return res.status(400).json({ success: false, message: 'No file uploaded' });
+    return res
+      .status(400)
+      .json({ success: false, message: "No file uploaded" });
   }
 
   const fileUrl = req.fileUrl;
-  return res.status(200).json({ success: true, message: 'File uploaded successfully', url: fileUrl });
-
-}
+  return res
+    .status(200)
+    .json({
+      success: true,
+      message: "File uploaded successfully",
+      url: fileUrl,
+    });
+};

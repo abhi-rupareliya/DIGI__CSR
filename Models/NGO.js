@@ -15,29 +15,29 @@ const ngoSchema = new mongoose.Schema({
     type: String,
   },
 
-  profile : {
+  profile: {
     summary: {
       type: String,
     },
-  
+
     board_members: [
       {
         bm_name: {
           type: String,
         },
-  
+
         bm_gender: {
           type: String,
         },
-  
+
         bm_din: {
           type: String,
         },
-  
+
         bm_phone: {
           type: String,
         },
-  
+
         bm_designation: {
           type: String,
         },
@@ -46,19 +46,22 @@ const ngoSchema = new mongoose.Schema({
     csr_budget: {
       type: Number,
     },
-  
+
     operation_area: [
       {
         type: String,
       },
     ],
-  
+
     sectors: [
       {
         type: String,
       },
     ],
-  }
+    ngo_logo: {
+      type: Buffer,
+    },
+  },
 });
 
 const NGO = mongoose.model("NGO", ngoSchema);

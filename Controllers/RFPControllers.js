@@ -18,6 +18,7 @@ exports.AddRfp = async (req, res) => {
     const newRFP = new RFP({
       title,
       amount,
+      remaining_amount: amount,
       timeline,
       sectors,
       states,
@@ -138,7 +139,6 @@ exports.acceptRFP = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const ngoId = req.user._id;
-    console.warn(ngoId);
     let rfp = await RFP.findById(rfpID);
     let ngo = await NGO.findById(ngoId);
 
@@ -148,16 +148,14 @@ exports.acceptRFP = async (req, res) => {
     if (!ngo) {
       return res.status(404).json({ success: false, message: "NGO not found" });
     }
-    if (
-      rfp.amount -
-        rfp.donations.reduce((total, donation) => total + donation.amount, 0) <
-      amount
-    ) {
+    if (amount > rfp.remaining_amount) {
       return res.status(400).json({
         success: false,
         message: "RFP does not have sufficient amount.",
       });
     }
+
+    rfp.remaining_amount = rfp.remaining_amount - amount;
 
     rfp.donations.push({
       ngo: ngoId,
