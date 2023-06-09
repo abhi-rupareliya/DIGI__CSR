@@ -250,8 +250,10 @@ exports.getRfpOfCompany = async (req, res) => {
 const NotifyNgo = async (sectors, states, rfp) => {
   try {
     const ngos = await NGO.find({
-      "profile.sectors": { $in: sectors },
-      "profile.operation_area": { $in: states },
+      $or: [
+        { "profile.sectors": { $in: sectors } },
+        { "profile.operation_area": { $in: states } },
+      ],
     });
 
     CreateNotification(ngos, rfp);
