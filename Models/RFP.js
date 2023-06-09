@@ -44,6 +44,10 @@ const RFPSchema = mongoose.Schema({
       date: {
         type: Date,
       },
+      status: {
+        type: String,
+        default: "Pending",
+      },
     },
   ],
   date: {
