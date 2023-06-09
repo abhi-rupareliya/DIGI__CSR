@@ -74,7 +74,7 @@ exports.VerifyNGO = async (req, res) => {
         type: "NGO",
       };
 
-      const authToken = genTocken(payload);
+      const authToken = genToken(payload);
 
       res.status(200).send({ success: true, result: authToken });
     } else res.status(400).send({ success: false, message: "Wrong OTP" });
