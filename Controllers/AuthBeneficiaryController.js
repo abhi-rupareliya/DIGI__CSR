@@ -1,6 +1,5 @@
 require("dotenv").config({ path: "../.env" });
 const Beneficiary = require('../Models/Beneficiary');
-const jwt = require("jsonwebtoken");
 const { sendOTP, verifyOTP } = require("../Services/otpService");
 const genToken = require("../Services/jwtTokenService")
 
@@ -114,11 +113,11 @@ exports.BeneficiaryLoginVerify = async (req, res) => {
     const is_verified = verifyOTP(email, otp);
 
     if (is_verified) {
-      const Beneficiary = await Beneficiary.findOne({
+      const beneficiary = await Beneficiary.findOne({
         $or: [{ email: email }],
       });
 
-      if (!Beneficiary) {
+      if (!beneficiary) {
         return res.status(400).send({
           success: false,
           message: "Beneficiary with this email not exists.",
@@ -126,8 +125,8 @@ exports.BeneficiaryLoginVerify = async (req, res) => {
       }
 
       const payload = {
-        _id: Beneficiary._id,
-        email: Beneficiary.email,
+        _id: beneficiary._id,
+        email: beneficiary.email,
         type: "Beneficiary"
       }
 
