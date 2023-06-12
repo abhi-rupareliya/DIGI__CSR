@@ -41,7 +41,12 @@ exports.getNGOProfile = async (req, res) => {
 
 exports.AddNGOProfile = async (req, res) => {
   try {
-    const NGOId = req.params.id;
+    if (req.userType !== "ngo") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const NGOId = req.user.id;
     const {
       ngo_name,
       summary,
@@ -124,6 +129,21 @@ exports.getNgoLogo = async (req, res) => {
     res.send(logoBuffer);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+exports.getAllNgo = async (req, res) => {
+  try {
+    const userType = req.userType;
+    if (userType !== "company" && userType !== "Beneficiary") {
+      return res
+        .status(403)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const ngos = await NGO.find({});
+    return res.status(200).send({ success: true, ngos });
+  } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 };

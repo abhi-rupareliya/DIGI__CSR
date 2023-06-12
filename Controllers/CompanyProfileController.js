@@ -79,7 +79,12 @@ exports.getCertificate = async (req, res) => {
 
 exports.AddCompanyProfile = async (req, res) => {
   try {
-    const companyId = req.params.id;
+    if (req.userType !== "company") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const companyId = req.user.id;
     const {
       company_name,
       summary,
@@ -182,6 +187,24 @@ exports.getCompanyLogo = async (req, res) => {
     res.send(logoBuffer);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+exports.getAllCompany = async (req, res) => {
+  try {
+    const userType = req.userType;
+    if (userType !== "ngo" && userType !== "Beneficiary") {
+      return res
+        .status(403)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const companies = await Company.find(
+      {},
+      { "profile.registration_certificate": 0 }
+    );
+    return res.status(200).send({ success: true, companies });
+  } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 };
