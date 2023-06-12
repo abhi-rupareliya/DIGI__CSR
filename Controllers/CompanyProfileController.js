@@ -1,5 +1,8 @@
 const Company = require("../Models/Company");
 const fs = require("fs");
+const {
+  CompanyProfileValidator,
+} = require("../Services/Validators/companyValidator");
 
 // Route to fetch data from the Company schema
 exports.getCompanyProfile = async (req, res) => {
@@ -91,7 +94,30 @@ exports.AddCompanyProfile = async (req, res) => {
       tax_comp,
       sectors,
     } = req.body;
-
+    let fileData, imageData;
+    // console.warn(tax_comp);
+    if (req.files) {
+      if (req.files.registration_certificate) {
+        fileData = fs.readFileSync(req.files.registration_certificate[0].path);
+        updatedFields["profile.registration_certificate"] = fileData;
+      }
+      if (req.files.company_logo) {
+        imageData = fs.readFileSync(req.files.company_logo[0].path);
+        updatedFields["profile.company_logo"] = imageData;
+      }
+    }
+    const { error } = CompanyProfileValidator.validate({
+      ...req.body,
+      tax_comp: tax_comp,
+      sectors: sectors,
+      registration_certificate: fileData,
+      company_logo: imageData,
+    });
+    if (error) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.details[0].message });
+    }
     let updatedFields = {
       company_name,
       "profile.summary": summary,
@@ -106,19 +132,6 @@ exports.AddCompanyProfile = async (req, res) => {
       "profile.tax_comp": tax_comp,
       "profile.sectors": sectors,
     };
-
-    if (req.files) {
-      if (req.files.registration_certificate) {
-        const fileData = fs.readFileSync(
-          req.files.registration_certificate[0].path
-        );
-        updatedFields["profile.registration_certificate"] = fileData;
-      }
-      if (req.files.company_logo) {
-        const imageData = fs.readFileSync(req.files.company_logo[0].path);
-        updatedFields["profile.company_logo"] = imageData;
-      }
-    }
 
     const company = await Company.findByIdAndUpdate(
       companyId,

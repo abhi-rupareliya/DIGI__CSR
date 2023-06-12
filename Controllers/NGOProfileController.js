@@ -1,5 +1,6 @@
 const NGO = require("../Models/NGO");
 const fs = require("fs");
+const { NgoProfileValidator } = require("../Services/Validators/ngoValidators");
 
 exports.getNGOProfile = async (req, res) => {
   try {
@@ -42,7 +43,7 @@ exports.AddNGOProfile = async (req, res) => {
   try {
     const NGOId = req.params.id;
     const {
-      NGO_name,
+      ngo_name,
       summary,
       board_members,
       csr_budget,
@@ -50,19 +51,29 @@ exports.AddNGOProfile = async (req, res) => {
       sectors,
     } = req.body;
 
+    let fileData;
+    if (req.files && req.files.ngo_logo) {
+      fileData = fs.readFileSync(req.files.ngo_logo[0].path);
+      updatedFields["profile.ngo_logo"] = fileData;
+    }
+    // console.warn(req.body);
+    const { error } = NgoProfileValidator.validate({
+      ...req.body,
+      ngo_logo: fileData,
+    });
+    if (error) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.details[0].message });
+    }
     let updatedFields = {
-      ngo_name: NGO_name,
+      ngo_name: ngo_name,
       "profile.summary": summary,
       "profile.board_members": board_members,
       "profile.csr_budget": csr_budget,
       "profile.operation_area": operation_area,
       "profile.sectors": sectors,
     };
-
-    if (req.files && req.files.ngo_logo) {
-      const fileData = fs.readFileSync(req.files.ngo_logo[0].path);
-      updatedFields["profile.ngo_logo"] = fileData;
-    }
 
     const ngo = await NGO.findByIdAndUpdate(
       NGOId,

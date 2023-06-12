@@ -5,6 +5,7 @@ const RFP = require("../Models/RFP");
 const Notification = require("../Models/Notification");
 const Company = require("../Models/Company");
 const sendMail = require("../Services/mailService");
+const { RFPValidator } = require("../Services/Validators/RFPValidators");
 
 exports.AddRfp = async (req, res) => {
   try {
@@ -14,6 +15,12 @@ exports.AddRfp = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const { title, amount, timeline, sectors, states } = req.body;
+    const { error } = RFPValidator(req.body);
+    if (error) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.details[0].message });
+    }
     const company = req.user._id;
     const newRFP = new RFP({
       title,
