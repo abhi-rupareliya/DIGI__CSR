@@ -11,7 +11,7 @@ const {
 exports.CompanySignup = async (req, res) => {
   try {
     const { cin, email } = req.body;
-    const { error } = CompanySignupValidator(req.body);
+    const { error } = CompanySignupValidator.validate(req.body);
     if (error) {
       return res
         .status(400)
@@ -62,7 +62,7 @@ exports.CompanySignup = async (req, res) => {
 exports.VerifyCompany = async (req, res) => {
   try {
     const { cin, email, otp } = req.body;
-    const { error } = CompanySignupValidator(req.body);
+    const { error } = CompanySignupValidator.validate(req.body);
     if (error) {
       return res
         .status(400)

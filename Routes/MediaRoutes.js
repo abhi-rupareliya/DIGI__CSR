@@ -16,7 +16,7 @@ const MediaRoutes = (app) => {
     app.put("/media/update/:id", AuthMiddleware, UpdatePost);
     app.delete("/media/delete/:id", AuthMiddleware, DeletePost);
 
-    app.post("/NGO/media/upload", fileUploaderMiddleware, uploadFile);
+    app.post("/media/upload", fileUploaderMiddleware, uploadFile);
 }
 
 module.exports = MediaRoutes;

@@ -10,7 +10,7 @@ const { BenfValidators } = require("../Services/Validators/BenfValidators");
 exports.BeneficiarySignup = async (req, res) => {
   try {
     const { name, email, mobile_no, aadhar_no } = req.body;
-    const { error } = BenfValidators(req.body);
+    const { error } = BenfValidators.validate(req.body);
     if (error) {
       return res
         .status(400)
@@ -47,7 +47,7 @@ exports.BeneficiarySignup = async (req, res) => {
 exports.VerifyBeneficiary = async (req, res) => {
   try {
     const { name, email, mobile_no, aadhar_no, otp } = req.body;
-    const { error } = BenfValidators(req.body);
+    const { error } = BenfValidators.validate(req.body);
     if (error) {
       return res
         .status(400)
@@ -99,7 +99,7 @@ exports.VerifyBeneficiary = async (req, res) => {
 exports.BeneficiaryLogin = async (req, res) => {
   try {
     const { email } = req.body;
-    const { error } = CompanyLoginValidator(req.body); // it has only email validator
+    const { error } = CompanyLoginValidator.validate(req.body); // it has only email validator
     if (error) {
       return res
         .status(400)
@@ -134,7 +134,7 @@ exports.BeneficiaryLogin = async (req, res) => {
 exports.BeneficiaryLoginVerify = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    const { error } = CompanyLoginValidator(req.body); // it has only email validator
+    const { error } = CompanyLoginValidator.validate(req.body); // it has only email validator
     if (error) {
       return res
         .status(400)

@@ -15,7 +15,7 @@ exports.AddRfp = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const { title, amount, timeline, sectors, states } = req.body;
-    const { error } = RFPValidator(req.body);
+    const { error } = RFPValidator.validate(req.body);
     if (error) {
       return res
         .status(400)
