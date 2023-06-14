@@ -9,6 +9,7 @@ exports.GetPostById = async (req, res) => {
     const post = await MediaPost.findById(postId);
 
     if (!post) {
+      console.warn("here");
       return res
         .status(404)
         .json({ success: false, message: "Post not found !!" });

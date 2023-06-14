@@ -11,7 +11,7 @@ const {
 exports.NGOSignup = async (req, res) => {
   try {
     const { csr, email } = req.body;
-    const { error } = NgoSingupValidator(req.body);
+    const { error } = NgoSingupValidator.validate(req.body);
     if (error) {
       return res
         .status(400)
@@ -61,7 +61,7 @@ exports.NGOSignup = async (req, res) => {
 exports.VerifyNGO = async (req, res) => {
   try {
     const { csr, email, otp } = req.body;
-    const { error } = NgoSingupValidator(req.body);
+    const { error } = NgoSingupValidator.validate(req.body);
     if (error) {
       return res
         .status(400)
@@ -105,7 +105,7 @@ exports.VerifyNGO = async (req, res) => {
 exports.NGOLogin = async (req, res) => {
   try {
     const { email } = req.body;
-    const { error } = CompanyLoginValidator(req.body); // it has only email validator
+    const { error } = CompanyLoginValidator.validate(req.body); // it has only email validator
     if (error) {
       return res
         .status(400)
@@ -140,8 +140,9 @@ exports.NGOLogin = async (req, res) => {
 exports.NGOLoginVerify = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    const { error } = CompanyLoginValidator(req.body); // it has only email validator
+    const { error } = CompanyLoginValidator.validate({email}); // it has only email validator
     if (error) {
+      console.warn(error);
       return res
         .status(400)
         .json({ success: false, message: error.details[0].message });

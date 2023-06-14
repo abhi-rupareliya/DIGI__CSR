@@ -106,8 +106,9 @@ exports.VerifyCompany = async (req, res) => {
 exports.CompanyLogin = async (req, res) => {
   try {
     const { email } = req.body;
-    const { error } = CompanyLoginValidator({ email });
+    const { error } = CompanyLoginValidator.validate({ email });
     if (error) {
+      console.warn(error);
       return res
         .status(400)
         .json({ success: false, message: error.details[0].message });
@@ -115,6 +116,7 @@ exports.CompanyLogin = async (req, res) => {
     const checkEmail = await Company.findOne({ email: email });
 
     if (!checkEmail) {
+      console.warn("insdie");
       return res.status(400).send({
         success: false,
         message: "Email address is not registered",
@@ -141,7 +143,7 @@ exports.CompanyLogin = async (req, res) => {
 exports.CompanyLoginVerify = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    const { error } = CompanyLoginValidator({ email });
+    const { error } = CompanyLoginValidator.validate({ email });
     if (error) {
       return res
         .status(400)
