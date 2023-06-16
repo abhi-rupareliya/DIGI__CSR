@@ -155,7 +155,13 @@ exports.getAllNgo = async (req, res) => {
         .status(403)
         .send({ success: false, message: "Not Authorized." });
     }
-    const ngos = await NGO.find({});
+    const ngos = await NGO.find({},{
+      _id : 1,
+      email : 1,
+      ngo_name : 1,
+      "profile.phone" : 1,
+      "profile.location" : 1,
+    });
     return res.status(200).send({ success: true, ngos });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error." });

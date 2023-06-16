@@ -60,19 +60,13 @@ exports.getAllRfps = async (req, res) => {
         .status(400)
         .send({ success: false, message: "Not Authorized." });
     }
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
-    const skip = (page - 1) * limit;
 
     const rfps = await RFP.find(
       {},
       { title: 1, sectors: 1, states: 1, company: 1 }
     )
       .populate({ path: "company", select: "company_name" })
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
-    console.warn(rfps);
+      .sort({ date: -1 });
     let response = rfps.map((rfp) => ({
       _id: rfp._id,
       title: rfp.title,
@@ -332,18 +326,12 @@ exports.getRfpOfCompany = async (req, res) => {
         .status(400)
         .send({ success: false, message: "Not Authorized." });
     }
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
-    const skip = (page - 1) * limit;
 
     const companyId = req.user._id;
     const rfps = await RFP.find(
       { company: companyId },
       { _id: 1, title: 1, sectors: 1, states: 1 }
-    )
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
+    ).sort({ date: -1 });
 
     res.status(200).json(rfps);
   } catch (error) {
@@ -360,7 +348,7 @@ exports.deleteRFP = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const id = req.params.id;
-    const rfp = await RFP.findOne({ _id: id }, { _id: 1,company:1 });
+    const rfp = await RFP.findOne({ _id: id }, { _id: 1, company: 1 });
     if (!rfp) {
       return res
         .status(404)
