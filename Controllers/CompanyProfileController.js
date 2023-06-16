@@ -101,6 +101,21 @@ exports.AddCompanyProfile = async (req, res) => {
     } = req.body;
     let fileData, imageData;
     // console.warn(tax_comp);
+    let updatedFields = {
+      company_name,
+      "profile.summary": summary,
+      "profile.location.city": city,
+      "profile.location.state": state,
+      "profile.location.pincode": pincode,
+      "profile.establishment_year": establishment_year,
+      "profile.comunication_person.cp_name": cp_name,
+      "profile.comunication_person.cp_email": cp_email,
+      "profile.comunication_person.cp_designation": cp_designation,
+      "profile.comunication_person.cp_phone": cp_phone,
+      "profile.tax_comp": tax_comp,
+      "profile.sectors": sectors,
+    };
+
     if (req.files) {
       if (req.files.registration_certificate) {
         fileData = fs.readFileSync(req.files.registration_certificate[0].path);
@@ -118,26 +133,17 @@ exports.AddCompanyProfile = async (req, res) => {
       registration_certificate: fileData,
       company_logo: imageData,
     });
+    console.warn({
+      ...req.body,
+      tax_comp: tax_comp,
+      sectors: sectors,
+    });
     if (error) {
+      console.warn(error.details);
       return res
         .status(400)
         .json({ success: false, message: error.details[0].message });
     }
-    let updatedFields = {
-      company_name,
-      "profile.summary": summary,
-      "profile.location.city": city,
-      "profile.location.state": state,
-      "profile.location.pincode": pincode,
-      "profile.establishment_year": establishment_year,
-      "profile.comunication_person.cp_name": cp_name,
-      "profile.comunication_person.cp_email": cp_email,
-      "profile.comunication_person.cp_designation": cp_designation,
-      "profile.comunication_person.cp_phone": cp_phone,
-      "profile.tax_comp": tax_comp,
-      "profile.sectors": sectors,
-    };
-
     const company = await Company.findByIdAndUpdate(
       companyId,
       { $set: updatedFields },

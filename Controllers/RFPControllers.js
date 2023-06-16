@@ -72,7 +72,7 @@ exports.getAllRfps = async (req, res) => {
       .sort({ date: -1 })
       .skip(skip)
       .limit(limit);
-
+    console.warn(rfps);
     let response = rfps.map((rfp) => ({
       _id: rfp._id,
       title: rfp.title,
@@ -302,10 +302,12 @@ exports.getRFP = async (req, res) => {
     }
     // to replace _id with ngo_name
     const transformedDonations = rfp.donations.map((donation) => ({
+      _id: donation._id,
       nogId: donation.ngo._id,
       ngo: donation.ngo.ngo_name,
       amount: donation.amount,
       date: donation.date,
+      status: donation.status,
     }));
 
     // Replace the donations array in the response with the transformedDonations

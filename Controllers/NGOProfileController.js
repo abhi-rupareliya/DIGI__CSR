@@ -57,6 +57,15 @@ exports.AddNGOProfile = async (req, res) => {
     } = req.body;
 
     let fileData;
+    let updatedFields = {
+      ngo_name: ngo_name,
+      "profile.summary": summary,
+      "profile.board_members": board_members,
+      "profile.csr_budget": csr_budget,
+      "profile.operation_area": operation_area,
+      "profile.sectors": sectors,
+    };
+
     if (req.files && req.files.ngo_logo) {
       fileData = fs.readFileSync(req.files.ngo_logo[0].path);
       updatedFields["profile.ngo_logo"] = fileData;
@@ -71,14 +80,6 @@ exports.AddNGOProfile = async (req, res) => {
         .status(400)
         .json({ success: false, message: error.details[0].message });
     }
-    let updatedFields = {
-      ngo_name: ngo_name,
-      "profile.summary": summary,
-      "profile.board_members": board_members,
-      "profile.csr_budget": csr_budget,
-      "profile.operation_area": operation_area,
-      "profile.sectors": sectors,
-    };
 
     const ngo = await NGO.findByIdAndUpdate(
       NGOId,

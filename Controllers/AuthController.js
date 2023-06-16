@@ -62,7 +62,7 @@ exports.CompanySignup = async (req, res) => {
 exports.VerifyCompany = async (req, res) => {
   try {
     const { cin, email, otp } = req.body;
-    const { error } = CompanySignupValidator.validate(req.body);
+    const { error } = CompanySignupValidator.validate({ email, cin });
     if (error) {
       return res
         .status(400)
