@@ -360,7 +360,7 @@ exports.deleteRFP = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const id = req.params.id;
-    const rfp = await RFP.findOne({ _id: id }, { _id: 1 });
+    const rfp = await RFP.findOne({ _id: id }, { _id: 1,company:1 });
     if (!rfp) {
       return res
         .status(404)
