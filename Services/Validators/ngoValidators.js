@@ -23,4 +23,9 @@ exports.NgoProfileValidator = Joi.object({
   operation_area: Joi.array().items(Joi.string()).required(),
   sectors: Joi.array().items(Joi.string()).required(),
   ngo_logo: Joi.binary(),
+  phone: Joi.string().required(),
+  city: Joi.string().required(),
+  state: Joi.string().required(),
+  pincode: Joi.number().required(),
+  establishment_year: Joi.number().required(),
 });

@@ -26,6 +26,9 @@ exports.getNGOProfile = async (req, res) => {
         csr_budget: ngo.profile.csr_budget,
         operation_area: ngo.profile.operation_area,
         sectors: ngo.profile.sectors,
+        location : ngo.profile.location,
+        phone : ngo.profile.phone,
+        establishment_year : ngo.profile.establishment_year
       },
     };
 
@@ -54,6 +57,11 @@ exports.AddNGOProfile = async (req, res) => {
       csr_budget,
       operation_area,
       sectors,
+      city,
+      state,
+      pincode,
+      establishment_year,
+      phone
     } = req.body;
 
     let fileData;
@@ -64,6 +72,11 @@ exports.AddNGOProfile = async (req, res) => {
       "profile.csr_budget": csr_budget,
       "profile.operation_area": operation_area,
       "profile.sectors": sectors,
+      "profile.location.city": city,
+      "profile.location.state": state,
+      "profile.location.pincode": pincode,
+      "profile.establishment_year": establishment_year,
+      "profile.phone": phone,
     };
 
     if (req.files && req.files.ngo_logo) {
