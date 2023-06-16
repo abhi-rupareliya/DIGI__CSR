@@ -161,6 +161,8 @@ exports.getAllNgo = async (req, res) => {
       ngo_name : 1,
       "profile.phone" : 1,
       "profile.location" : 1,
+      "profile.operation_area" : 1,
+      "profile.sectors" : 1,
     });
     return res.status(200).send({ success: true, ngos });
   } catch (error) {
