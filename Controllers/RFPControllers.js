@@ -352,6 +352,35 @@ exports.getRfpOfCompany = async (req, res) => {
   }
 };
 
+exports.deleteRFP = async (req, res) => {
+  try {
+    if (req.userType !== "company") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const id = req.params.id;
+    const rfp = await RFP.findOne({ _id: id }, { _id: 1 });
+    if (!rfp) {
+      return res
+        .status(404)
+        .json({ success: false, message: "RFP not found." });
+    }
+    if (!rfp.company.equals(req.user._id)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized to delete this RFP." });
+    }
+    await RFP.findByIdAndDelete(id);
+    return res
+      .status(200)
+      .json({ success: true, message: "RFP deleted successfully." });
+  } catch (error) {
+    console.error("Error retrieving RFPs:", error);
+    res.status(500).json({ error: "An error occurred while retrieving RFPs." });
+  }
+};
+
 const NotifyNgo = async (sectors, states, rfp) => {
   try {
     const ngos = await NGO.find({
