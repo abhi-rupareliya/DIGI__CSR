@@ -15,7 +15,7 @@ module.exports = async (req, res, next) => {
 
   try {
     const { _id, type } = jwt.verify(token, jwt_sec);
-
+    console.warn({ _id, type });
     console.log("_id: " + _id + " type: " + type);
 
     switch (type) {
@@ -54,7 +54,7 @@ module.exports = async (req, res, next) => {
         try {
           const beneficiary = await Beneficiary.find({ _id }, { _id: 1 });
           if (beneficiary) {
-            req.user[0] = beneficiary;
+            req.user = beneficiary[0];
             req.userType = "Beneficiary";
             break;
           }
