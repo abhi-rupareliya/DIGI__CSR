@@ -22,6 +22,7 @@ module.exports = async (req, res, next) => {
       case "company":
         try {
           const company = await Company.find({ _id }, { _id: 1 });
+          console.warn("cpny ", company);
           if (company) {
             req.user = company[0];
             req.userType = "company";
