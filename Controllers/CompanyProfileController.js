@@ -107,17 +107,17 @@ exports.AddCompanyProfile = async (req, res) => {
       "profile.sectors": sectors,
     };
 
-    if (
-      req.files &&
-      req.files.registration_certificate &&
-      req.files.company_logo
-    ) {
-      const fileData = fs.readFileSync(
-        req.files.registration_certificate[0].path
-      );
-      updatedFields["profile.registration_certificate"] = fileData;
-      const imageData = fs.readFileSync(req.files.company_logo[0].path);
-      updatedFields["profile.company_logo"] = imageData;
+    if (req.files) {
+      if (req.files.registration_certificate) {
+        const fileData = fs.readFileSync(
+          req.files.registration_certificate[0].path
+        );
+        updatedFields["profile.registration_certificate"] = fileData;
+      }
+      if (req.files.company_logo) {
+        const imageData = fs.readFileSync(req.files.company_logo[0].path);
+        updatedFields["profile.company_logo"] = imageData;
+      }
     }
 
     const company = await Company.findByIdAndUpdate(
@@ -136,6 +136,37 @@ exports.AddCompanyProfile = async (req, res) => {
       success: true,
       message: company,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+exports.getCompanyLogo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const company = await Company.findOne(
+      { _id: id },
+      {
+        "profile.company_logo": 1,
+      }
+    );
+    if (!company) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found." });
+    }
+
+    const logoBuffer = company.profile.company_logo;
+    if (!logoBuffer) {
+      return res.status(404).json({
+        success: false,
+        message: "Registration certificate not found.",
+      });
+    }
+
+    res.set("Content-Type", "image");
+    res.send(logoBuffer);
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error." });

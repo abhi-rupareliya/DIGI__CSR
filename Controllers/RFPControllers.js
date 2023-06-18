@@ -18,6 +18,7 @@ exports.AddRfp = async (req, res) => {
     const newRFP = new RFP({
       title,
       amount,
+      remaining_amount: amount,
       timeline,
       sectors,
       states,
@@ -138,7 +139,6 @@ exports.acceptRFP = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const ngoId = req.user._id;
-    console.warn(ngoId);
     let rfp = await RFP.findById(rfpID);
     let ngo = await NGO.findById(ngoId);
 
@@ -148,11 +148,7 @@ exports.acceptRFP = async (req, res) => {
     if (!ngo) {
       return res.status(404).json({ success: false, message: "NGO not found" });
     }
-    if (
-      rfp.amount -
-        rfp.donations.reduce((total, donation) => total + donation.amount, 0) <
-      amount
-    ) {
+    if (amount > rfp.remaining_amount) {
       return res.status(400).json({
         success: false,
         message: "RFP does not have sufficient amount.",
@@ -167,12 +163,110 @@ exports.acceptRFP = async (req, res) => {
 
     await rfp.save();
 
-    NotifyCompanyAcceptedRFP(rfp, ngo.ngo_name, amount);
+    NotifyNGOAcceptedRFP(rfp, ngo.ngo_name, amount);
     return res
       .status(200)
       .json({ success: true, message: "Donation successful" });
   } catch (error) {
     console.error("Error donating to RFP:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.manageDonation = async (req, res) => {
+  try {
+    const { rfpID, donationId, action } = req.body;
+    const { userType } = req;
+
+    if (userType !== "company") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Not Authorized." });
+    }
+
+    const rfp = await RFP.findOne(
+      { _id: rfpID },
+      { amount: 1, remaining_amount: 1, donations: 1, company: 1 }
+    );
+
+    if (!rfp) {
+      return res.status(404).json({ success: false, message: "RFP not found" });
+    }
+    const companyName = await Company.findOne(
+      { _id: rfp.company },
+      { company_name: 1 }
+    );
+
+    let donation;
+
+    switch (action) {
+      case "approve":
+        donation = rfp.donations.find(
+          (donation) => donation._id.toString() === donationId
+        );
+
+        if (!donation) {
+          return res.status(404).json({
+            success: false,
+            message: "Donation not found.",
+          });
+        }
+        if (donation.amount > rfp.remaining_amount) {
+          return res.status(400).json({
+            success: false,
+            message: "RFP does not have sufficient amount.",
+          });
+        }
+        donation.status = "approved";
+        rfp.remaining_amount -= donation.amount;
+        notifyCompanyApproval(companyName.company_name, donation, action);
+        break;
+
+      case "reject":
+        console.warn(rfp);
+        donation = rfp.donations.find(
+          (donation) => donation._id.toString() === donationId
+        );
+
+        if (!donation) {
+          return res.status(404).json({
+            success: false,
+            message: "Donation not found.",
+          });
+        }
+
+        donation.status = "rejected";
+        notifyCompanyApproval(companyName.company_name, donation, action);
+        break;
+
+      case "delete":
+        const donationIndex = rfp.donations.findIndex(
+          (donation) => donation._id.toString() === donationId
+        );
+
+        if (donationIndex === -1) {
+          return res.status(404).json({
+            success: false,
+            message: "Donation not found.",
+          });
+        }
+
+        rfp.donations.splice(donationIndex, 1);
+        break;
+
+      default:
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid action" });
+    }
+
+    await rfp.save();
+    // NotifyCompanyAcceptedRFP(rfp, ngo.ngo_name, amount);
+    return res
+      .status(200)
+      .json({ success: true, message: "Operation successful" });
+  } catch (error) {
+    console.error("Error managing donation:", error);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -252,8 +346,10 @@ exports.getRfpOfCompany = async (req, res) => {
 const NotifyNgo = async (sectors, states, rfp) => {
   try {
     const ngos = await NGO.find({
-      "profile.sectors": { $in: sectors },
-      "profile.operation_area": { $in: states },
+      $or: [
+        { "profile.sectors": { $in: sectors } },
+        { "profile.operation_area": { $in: states } },
+      ],
     });
 
     CreateNotification(ngos, rfp);
@@ -296,14 +392,14 @@ const CreateNotification = async (ngos, rfp) => {
   }
 };
 
-const NotifyCompanyAcceptedRFP = async (rfp, ngo, amount) => {
+const NotifyNGOAcceptedRFP = async (rfp, ngo, amount) => {
   try {
     const company = await Company.findById(rfp.company);
     const text = `Dear ${company.company_name},
-      An NGO ${ngo} has accepted your RFP. 
+      An NGO ${ngo} has requested amount of ${amount}Rs
+      in your RFP. 
       Below are the details of the RFP:
       Title: ${rfp.title}
-      Accepted Amount: ${amount}
       Sectors: ${rfp.sectors.join(", ")}`;
 
     try {
@@ -318,17 +414,63 @@ const NotifyCompanyAcceptedRFP = async (rfp, ngo, amount) => {
 
     // creating notification for comapany
     const newNotification = new Notification({
-      content: `
-      An NGO ${ngo} has accepted your RFP. 
+      content: `Dear ${company.company_name},
+      An NGO ${ngo} has requested amount of ${amount}Rs
+      in your RFP. 
       Below are the details of the RFP:
-      
       Title: ${rfp.title}
-      Accepted Amount: ${amount}
-      Sectors: ${rfp.sectors.join(", ")}
-      `,
+      Sectors: ${rfp.sectors.join(", ")}`,
       recipients: [
         {
           recipient: rfp.company,
+          read: false,
+        },
+      ],
+    });
+
+    await newNotification.save();
+  } catch (error) {
+    console.error("Error notifying to Company:", error);
+  }
+};
+
+const notifyCompanyApproval = async (company, donation, action) => {
+  try {
+    const ngo = await NGO.findOne(
+      { _id: donation.ngo },
+      { ngo_name: 1, email: 1 }
+    );
+    let text;
+    if (action === "approve") {
+      text = `Dear ${ngo.ngo_name},
+      Company ${company} has approved your request.
+      Details : 
+      Donation amount : ${donation.amount},
+      Donation status : ${donation.status}.`;
+    }
+    if (action === "reject") {
+      text = `Dear ${ngo.ngo_name},
+      Company ${company} has rejected your request.
+      Details : 
+      Donation amount : ${donation.amount},
+      Donation status : ${donation.status}.`;
+    }
+    try {
+      const mailRes = await sendMail(
+        ngo.email,
+        "Company Approval to RFP donation request.",
+        text
+      );
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+
+    // creating notification for comapany
+    const newNotification = new Notification({
+      content: text,
+      recipients: [
+        {
+          recipient: ngo._id,
           read: false,
         },
       ],
