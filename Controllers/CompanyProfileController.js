@@ -1,5 +1,8 @@
 const Company = require("../Models/Company");
 const fs = require("fs");
+const {
+  CompanyProfileValidator,
+} = require("../Services/Validators/companyValidator");
 
 // Route to fetch data from the Company schema
 exports.getCompanyProfile = async (req, res) => {
@@ -76,7 +79,12 @@ exports.getCertificate = async (req, res) => {
 
 exports.AddCompanyProfile = async (req, res) => {
   try {
-    const companyId = req.params.id;
+    if (req.userType !== "company") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const companyId = req.user.id;
     const {
       company_name,
       summary,
@@ -91,7 +99,8 @@ exports.AddCompanyProfile = async (req, res) => {
       tax_comp,
       sectors,
     } = req.body;
-
+    let fileData, imageData;
+    // console.warn(tax_comp);
     let updatedFields = {
       company_name,
       "profile.summary": summary,
@@ -109,17 +118,32 @@ exports.AddCompanyProfile = async (req, res) => {
 
     if (req.files) {
       if (req.files.registration_certificate) {
-        const fileData = fs.readFileSync(
-          req.files.registration_certificate[0].path
-        );
+        fileData = fs.readFileSync(req.files.registration_certificate[0].path);
         updatedFields["profile.registration_certificate"] = fileData;
       }
       if (req.files.company_logo) {
-        const imageData = fs.readFileSync(req.files.company_logo[0].path);
+        imageData = fs.readFileSync(req.files.company_logo[0].path);
         updatedFields["profile.company_logo"] = imageData;
       }
     }
-
+    const { error } = CompanyProfileValidator.validate({
+      ...req.body,
+      tax_comp: tax_comp,
+      sectors: sectors,
+      registration_certificate: fileData,
+      company_logo: imageData,
+    });
+    console.warn({
+      ...req.body,
+      tax_comp: tax_comp,
+      sectors: sectors,
+    });
+    if (error) {
+      console.warn(error.details);
+      return res
+        .status(400)
+        .json({ success: false, message: error.details[0].message });
+    }
     const company = await Company.findByIdAndUpdate(
       companyId,
       { $set: updatedFields },
@@ -169,6 +193,24 @@ exports.getCompanyLogo = async (req, res) => {
     res.send(logoBuffer);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+exports.getAllCompany = async (req, res) => {
+  try {
+    const userType = req.userType;
+    if (userType !== "ngo" && userType !== "Beneficiary") {
+      return res
+        .status(403)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const companies = await Company.find(
+      {},
+      { "profile.registration_certificate": 0 }
+    );
+    return res.status(200).send({ success: true, companies });
+  } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 };

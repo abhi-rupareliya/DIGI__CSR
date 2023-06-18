@@ -5,6 +5,7 @@ const RFP = require("../Models/RFP");
 const Notification = require("../Models/Notification");
 const Company = require("../Models/Company");
 const sendMail = require("../Services/mailService");
+const { RFPValidator } = require("../Services/Validators/RFPValidators");
 
 exports.AddRfp = async (req, res) => {
   try {
@@ -14,6 +15,12 @@ exports.AddRfp = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const { title, amount, timeline, sectors, states } = req.body;
+    const { error } = RFPValidator.validate(req.body);
+    if (error) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.details[0].message });
+    }
     const company = req.user._id;
     const newRFP = new RFP({
       title,
@@ -53,19 +60,13 @@ exports.getAllRfps = async (req, res) => {
         .status(400)
         .send({ success: false, message: "Not Authorized." });
     }
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
-    const skip = (page - 1) * limit;
 
     const rfps = await RFP.find(
       {},
       { title: 1, sectors: 1, states: 1, company: 1 }
     )
       .populate({ path: "company", select: "company_name" })
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
-
+      .sort({ date: -1 });
     let response = rfps.map((rfp) => ({
       _id: rfp._id,
       title: rfp.title,
@@ -295,10 +296,12 @@ exports.getRFP = async (req, res) => {
     }
     // to replace _id with ngo_name
     const transformedDonations = rfp.donations.map((donation) => ({
+      _id: donation._id,
       nogId: donation.ngo._id,
       ngo: donation.ngo.ngo_name,
       amount: donation.amount,
       date: donation.date,
+      status: donation.status,
     }));
 
     // Replace the donations array in the response with the transformedDonations
@@ -323,20 +326,43 @@ exports.getRfpOfCompany = async (req, res) => {
         .status(400)
         .send({ success: false, message: "Not Authorized." });
     }
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
-    const skip = (page - 1) * limit;
 
     const companyId = req.user._id;
     const rfps = await RFP.find(
       { company: companyId },
       { _id: 1, title: 1, sectors: 1, states: 1 }
-    )
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
+    ).sort({ date: -1 });
 
     res.status(200).json(rfps);
+  } catch (error) {
+    console.error("Error retrieving RFPs:", error);
+    res.status(500).json({ error: "An error occurred while retrieving RFPs." });
+  }
+};
+
+exports.deleteRFP = async (req, res) => {
+  try {
+    if (req.userType !== "company") {
+      return res
+        .status(400)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const id = req.params.id;
+    const rfp = await RFP.findOne({ _id: id }, { _id: 1, company: 1 });
+    if (!rfp) {
+      return res
+        .status(404)
+        .json({ success: false, message: "RFP not found." });
+    }
+    if (!rfp.company.equals(req.user._id)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized to delete this RFP." });
+    }
+    await RFP.findByIdAndDelete(id);
+    return res
+      .status(200)
+      .json({ success: true, message: "RFP deleted successfully." });
   } catch (error) {
     console.error("Error retrieving RFPs:", error);
     res.status(500).json({ error: "An error occurred while retrieving RFPs." });

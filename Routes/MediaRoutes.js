@@ -20,7 +20,6 @@ const MediaRoutes = (app) => {
 
     // Helper route for uploading images for media posts
     app.post("/media/upload", fileUploaderMiddleware, uploadFile);
-
 }
 
 module.exports = MediaRoutes;

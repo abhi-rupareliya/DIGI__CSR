@@ -19,6 +19,18 @@ const ngoSchema = new mongoose.Schema({
     summary: {
       type: String,
     },
+    phone: {
+      type: String,
+      required: true,
+    },
+    establishment_year: {
+      type: Number,
+    },
+    location: {
+      city: String,
+      state: String,
+      pincode: String,
+    },
 
     board_members: [
       {
