@@ -88,7 +88,13 @@ exports.VerifyBeneficiary = async (req, res) => {
 
       const authToken = genToken(payload);
 
-      res.status(200).send({ success: true, result: authToken });
+      res.status(200).send({
+        success: true,
+        result: authToken,
+        _id: newBeneficiary._id,
+        email: newBeneficiary.email,
+        type: "Beneficiary",
+      });
     } else {
       res.status(400).send({ success: false, message: "Wrong OTP" });
     }
@@ -167,7 +173,15 @@ exports.BeneficiaryLoginVerify = async (req, res) => {
 
       const authToken = genToken(payload);
 
-      res.status(200).send({ success: true, result: authToken });
+      res
+        .status(200)
+        .send({
+          success: true,
+          result: authToken,
+          _id: beneficiary._id,
+          email: beneficiary.email,
+          type: "Beneficiary",
+        });
     } else res.status(400).send({ success: false, message: "Wrong OTP" });
   } catch (err) {
     console.warn(err);

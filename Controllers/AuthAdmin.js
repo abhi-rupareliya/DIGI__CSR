@@ -57,7 +57,7 @@ exports.AdminLoginVerify = async (req, res) => {
       res.status(200).send({
         success: true,
         result: authToken,
-        user: "Admin",
+        type: "Admin",
         _id: admin._id,
         email: admin.email,
       });
