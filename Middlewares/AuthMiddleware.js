@@ -3,6 +3,7 @@ const jwt_sec = process.env.JWT_SEC;
 const Company = require("../Models/Company");
 const Beneficiary = require("../Models/Beneficiary");
 const NGO = require("../Models/NGO");
+const Admin = require("../Models/Admin");
 
 module.exports = async (req, res, next) => {
   const token = req.header("authorization");
@@ -56,6 +57,23 @@ module.exports = async (req, res, next) => {
           if (beneficiary) {
             req.user = beneficiary[0];
             req.userType = "Beneficiary";
+            break;
+          }
+          throw new Error("Unauthorized");
+        } catch (error) {
+          return res
+            .status(401)
+            .send({ success: false, message: "Not Authorized." });
+        }
+
+      case "Admin":
+        try {
+          const admin = await Admin.find({ _id }, { _id: 1 });
+          console.warn(admin);
+          if (admin) {
+            console.warn("inside if");
+            req.user = admin[0];
+            req.userType = "Admin";
             break;
           }
           throw new Error("Unauthorized");

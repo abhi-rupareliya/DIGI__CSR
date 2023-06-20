@@ -47,7 +47,12 @@ exports.BeneficiarySignup = async (req, res) => {
 exports.VerifyBeneficiary = async (req, res) => {
   try {
     const { name, email, mobile_no, aadhar_no, otp } = req.body;
-    const { error } = BenfValidators.validate({name,email,aadhar_no,mobile_no});
+    const { error } = BenfValidators.validate({
+      name,
+      email,
+      aadhar_no,
+      mobile_no,
+    });
     if (error) {
       return res
         .status(400)
@@ -170,5 +175,49 @@ exports.BeneficiaryLoginVerify = async (req, res) => {
       success: false,
       message: "Error in login Beneficiary.",
     });
+  }
+};
+
+exports.getAllBeneficiaries = async (req, res) => {
+  try {
+    const userType = req.userType;
+    if (userType !== "Admin") {
+      return res
+        .status(403)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const beneficiary = await Beneficiary.find({});
+    return res.status(200).send({ success: true, beneficiary });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+exports.deleteBeneficiary = async (req, res) => {
+  try {
+    const userType = req.userType;
+    if (userType !== "Admin") {
+      return res
+        .status(403)
+        .send({ success: false, message: "Not Authorized." });
+    }
+    const _id = req.body._id;
+    const beneficiary = await Beneficiary.findOne({ _id });
+    if (!beneficiary) {
+      return res
+        .status(404)
+        .json({ success: false, message: "beneficiary not found." });
+    }
+    const result = await Beneficiary.findByIdAndDelete(_id);
+    if (!result) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to delete beneficiary." });
+    }
+    return res
+      .status(200)
+      .send({ success: true, message: "beneficiary Deleted." });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error." });
   }
 };

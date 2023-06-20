@@ -92,7 +92,13 @@ exports.VerifyCompany = async (req, res) => {
 
       const authToken = genToken(payload);
 
-      res.status(200).send({ success: true, result: authToken });
+      res.status(200).send({
+        success: true,
+        result: authToken,
+        _id: newCompany._id,
+        email: newCompany.email,
+        type: "company",
+      });
     } else res.status(400).send({ success: false, message: "Wrong OTP" });
   } catch (error) {
     console.warn(error);

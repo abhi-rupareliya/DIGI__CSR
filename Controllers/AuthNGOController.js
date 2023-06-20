@@ -91,7 +91,15 @@ exports.VerifyNGO = async (req, res) => {
 
       const authToken = genToken(payload);
 
-      res.status(200).send({ success: true, result: authToken });
+      res
+        .status(200)
+        .send({
+          success: true,
+          result: authToken,
+          _id: newNGO._id,
+          type: "NGO",
+          email: newNGO.email,
+        });
     } else res.status(400).send({ success: false, message: "Wrong OTP" });
   } catch (error) {
     console.warn(error);
