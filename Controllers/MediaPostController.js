@@ -3,11 +3,13 @@ const MediaPost = require("../Models/MediaPost");
 //Create New Media Post
 
 exports.GetPostById = async (req, res) => {
-
   const postId = req.params.id;
 
   try {
-    const post = await MediaPost.findById(postId).populate("author", "ngo_name");
+    const post = await MediaPost.findById(postId).populate(
+      "author",
+      "ngo_name"
+    );
 
     if (!post) {
       console.warn("here");
@@ -30,11 +32,14 @@ exports.GetPostById = async (req, res) => {
 };
 
 exports.GetPosts = async (req, res) => {
-
   try {
-    const posts = req.userType !== "ngo"
-      ? await MediaPost.find().populate("author", "ngo_name")
-      : await MediaPost.find({ author: req.user._id }).populate("author", "ngo_name");
+    const posts =
+      req.userType !== "ngo"
+        ? await MediaPost.find().populate("author", "ngo_name")
+        : await MediaPost.find({ author: req.user._id }).populate(
+            "author",
+            "ngo_name"
+          );
 
     if (!posts) {
       return res
@@ -54,31 +59,29 @@ exports.GetPosts = async (req, res) => {
   }
 };
 
-
 exports.CreatePost = async (req, res) => {
   try {
-
     if (req.userType !== "ngo") {
       return res
         .status(401)
         .send({ success: false, message: "Not Authorized." });
     }
 
-
     const user = req.user;
 
     const { title, content } = req.body;
 
     if (!title || !content) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Title and content is require to create a post !!!" });
+      return res.status(400).json({
+        success: false,
+        message: "Title and content is require to create a post !!!",
+      });
     }
 
     const newMediaPost = new MediaPost({
       title,
       content,
-      author: user._id
+      author: user._id,
     });
 
     const createdMediaPost = await newMediaPost.save();
@@ -94,7 +97,6 @@ exports.CreatePost = async (req, res) => {
 
 exports.UpdatePost = async (req, res) => {
   try {
-
     if (req.userType !== "ngo") {
       return res
         .status(401)
@@ -105,12 +107,16 @@ exports.UpdatePost = async (req, res) => {
     const { title, content, mediaUrl } = req.body;
 
     if (!title || !content) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Title and content is require to create a post !!!" });
+      return res.status(400).json({
+        success: false,
+        message: "Title and content is require to create a post !!!",
+      });
     }
 
-    const media = await MediaPost.findById(postId).populate("author", "ngo_name");
+    const media = await MediaPost.findById(postId).populate(
+      "author",
+      "ngo_name"
+    );
 
     if (!media) {
       return res
@@ -134,7 +140,10 @@ exports.UpdatePost = async (req, res) => {
 
     const updatedMedia = await media.save();
 
-    const postData = { ...updatedMedia._doc, author: updatedMedia.author.ngo_name };
+    const postData = {
+      ...updatedMedia._doc,
+      author: updatedMedia.author.ngo_name,
+    };
 
     // console.log(postData);
 
@@ -148,7 +157,7 @@ exports.UpdatePost = async (req, res) => {
 
 exports.DeletePost = async (req, res) => {
   try {
-    if (req.userType !== "ngo") {
+    if (req.userType !== "ngo" && req.userType !== "Admin") {
       return res
         .status(401)
         .send({ success: false, message: "Not Authorized." });
@@ -164,7 +173,9 @@ exports.DeletePost = async (req, res) => {
         .json({ success: false, message: "Media post not found" });
     }
 
-    return res.status(200).json({ success: true, message: "Media post deleted successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Media post deleted successfully" });
   } catch (err) {
     console.log(err);
     return res
@@ -174,11 +185,8 @@ exports.DeletePost = async (req, res) => {
 };
 
 exports.uploadFile = (req, res) => {
-
   if (req.userType !== "ngo") {
-    return res
-      .status(401)
-      .send({ success: false, message: "Not Authorized." });
+    return res.status(401).send({ success: false, message: "Not Authorized." });
   }
 
   if (!req.fileUrl) {
@@ -188,11 +196,9 @@ exports.uploadFile = (req, res) => {
   }
 
   const fileUrl = req.fileUrl;
-  return res
-    .status(200)
-    .json({
-      success: true,
-      message: "File uploaded successfully",
-      url: fileUrl,
-    });
+  return res.status(200).json({
+    success: true,
+    message: "File uploaded successfully",
+    url: fileUrl,
+  });
 };

@@ -57,7 +57,7 @@ exports.PostReview = async (req, res) => {
 
 exports.getNGOReviews = async (req, res) => {
   try {
-    if (req.userType === "company" || req.userType === "Beneficiary") {
+    if (req.userType !== "ngo") {
       const id = req.params.id;
       const reviews = await NGOReview.find({ ngo: id });
       if (!reviews || reviews.length === 0) {
@@ -80,5 +80,41 @@ exports.getNGOReviews = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, error: "Failed to get the reviews." });
+  }
+};
+
+exports.deleteReview = async (req, res) => {
+  try {
+    const userType = req.userType;
+    const reviewId = req.params.id;
+    const review = await NGOReview.findById(reviewId);
+
+    if (!review) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Review not found." });
+    }
+    if (
+      userType !== "Admin" &&
+      (review.companyReviewer !== req.user._id ||
+        review.beneficiaryReviewer !== req.user._id)
+    ) {
+      return res
+        .status(403)
+        .send({ success: false, message: "Not Authorized." });
+    }
+
+    const deletedReview = await NGOReview.findByIdAndDelete(reviewId);
+
+    if (!deletedReview) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to delete review." });
+    }
+
+    return res.status(200).send({ success: true, message: "Review deleted." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error." });
   }
 };
