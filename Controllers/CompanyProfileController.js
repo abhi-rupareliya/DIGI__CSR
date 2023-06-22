@@ -178,22 +178,22 @@ exports.AddCompanyProfile = async (req, res) => {
       "profile.sectors": sectors,
     };
 
-    if (req.files) {
-      if (req.files.registration_certificate) {
-        fileData = fs.readFileSync(req.files.registration_certificate[0].path);
-        updatedFields["profile.registration_certificate"] = fileData;
-      }
-      if (req.files.company_logo) {
-        imageData = fs.readFileSync(req.files.company_logo[0].path);
-        updatedFields["profile.company_logo"] = imageData;
-      }
-    }
+    // if (req.files) {
+    //   if (req.files.registration_certificate) {
+    //     fileData = fs.readFileSync(req.files.registration_certificate[0].path);
+    //     updatedFields["profile.registration_certificate"] = fileData;
+    //   }
+    //   if (req.files.company_logo) {
+    //     imageData = fs.readFileSync(req.files.company_logo[0].path);
+    //     updatedFields["profile.company_logo"] = imageData;
+    //   }
+    // }
     const { error } = CompanyProfileValidator.validate({
       ...req.body,
       tax_comp: tax_comp,
       sectors: sectors,
-      registration_certificate: fileData,
-      company_logo: imageData,
+      // registration_certificate: fileData,
+      // company_logo: imageData,
     });
     console.warn({
       ...req.body,
