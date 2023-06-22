@@ -20,6 +20,7 @@ exports.CompanyProfileValidator = Joi.object({
   sectors: Joi.array().items(Joi.string()).required(),
   // registration_certificate: Joi.binary(),
   // company_logo: Joi.binary(),
+  company_logo: Joi.binary(),
 });
 
 exports.CompanyLoginValidator = Joi.object({

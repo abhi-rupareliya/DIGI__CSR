@@ -64,7 +64,6 @@ exports.AddNGOProfile = async (req, res) => {
       phone,
     } = req.body;
 
-    let fileData;
     let updatedFields = {
       ngo_name: ngo_name,
       "profile.summary": summary,
@@ -79,16 +78,13 @@ exports.AddNGOProfile = async (req, res) => {
       "profile.phone": phone,
     };
 
-    if (req.files && req.files.ngo_logo) {
-      fileData = fs.readFileSync(req.files.ngo_logo[0].path);
-      updatedFields["profile.ngo_logo"] = fileData;
-    }
+
     // console.warn(req.body);
     const { error } = NgoProfileValidator.validate({
       ...req.body,
-      ngo_logo: fileData,
     });
     if (error) {
+      console.warn(error.details);
       return res
         .status(400)
         .json({ success: false, message: error.details[0].message });
