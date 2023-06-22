@@ -1,8 +1,8 @@
 const multer = require("multer");
 
 const fileUploaderMiddleware = require("../Middlewares/fileUploaderMiddleware");
-const logoUploaderMiddleware = fileUploaderMiddleware('logo');
-const certificateUploaderMiddleware = fileUploaderMiddleware('certificate');
+const logoUploaderMiddleware = fileUploaderMiddleware("logo");
+const certificateUploaderMiddleware = fileUploaderMiddleware("certificate");
 
 const {
   getCompanyProfile,
@@ -40,36 +40,37 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const ProfileRoutes = (app) => {
-
   // company
   app.get("/company/profile/:id", getCompanyProfile);
   app.get("/company/certificate/:id", getCertificate);
   app.get("/company/logo/:id", getCompanyLogo);
-  app.post(
-    "/company/add-profile",
-    upload.fields([
-      { name: "registration_certificate", maxCount: 1 },
-      { name: "company_logo", maxCount: 1 },
-    ]),
-    AuthMiddleware,
-    AddCompanyProfile
-  );
+  app.post("/company/add-profile", AuthMiddleware, AddCompanyProfile);
 
-  app.post("/company/upload-logo", AuthMiddleware, logoUploaderMiddleware, uploadLogo);
-  app.post("/company/upload-certificate", AuthMiddleware, certificateUploaderMiddleware, uploadCertificate);
+  app.post(
+    "/company/upload-logo",
+    AuthMiddleware,
+    logoUploaderMiddleware,
+    uploadLogo
+  );
+  app.post(
+    "/company/upload-certificate",
+    AuthMiddleware,
+    certificateUploaderMiddleware,
+    uploadCertificate
+  );
 
   // Ngo
   app.get("/NGO", AuthMiddleware, getAllNgo);
   app.get("/NGO/profile/:id", getNGOProfile);
   app.get("/NGO/logo/:id", getNgoLogo);
-  app.post(
-    "/NGO/add-profile",
-    upload.fields([{ name: "ngo_logo", maxCount: 1 }]),
-    AuthMiddleware,
-    AddNGOProfile
-  );
+  app.post("/NGO/add-profile", AuthMiddleware, AddNGOProfile);
 
-  app.post("/ngo/upload-logo", AuthMiddleware, logoUploaderMiddleware, uploadNgoLogo);
+  app.post(
+    "/ngo/upload-logo",
+    AuthMiddleware,
+    logoUploaderMiddleware,
+    uploadNgoLogo
+  );
 
   // Admin
   app.delete("/company/delete", AuthMiddleware, deleteCompany);
@@ -77,6 +78,5 @@ const ProfileRoutes = (app) => {
   app.delete("/Beneficiary/delete", AuthMiddleware, deleteBeneficiary);
   app.get("/Beneficiaries", AuthMiddleware, getAllBeneficiaries);
   app.get("/companies", AuthMiddleware, getAllCompany);
-
 };
 module.exports = ProfileRoutes;
