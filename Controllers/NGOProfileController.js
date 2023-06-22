@@ -116,6 +116,64 @@ exports.AddNGOProfile = async (req, res) => {
   }
 };
 
+exports.uploadNgoLogo = async (req, res) => {
+
+  console.log(req.userType);
+  if (req.userType !== "ngo") {
+    return res.status(401).json({ success: false, message: "Not Authorized." });
+  }
+
+  if (!req.fileUrl) {
+    return res
+      .status(400)
+      .json({ success: false, message: "No file uploaded" });
+  }
+
+  const fileUrl = req.fileUrl;
+
+  try {
+
+    const ngoId = req.user._id;
+    const ngo = await NGO.findById(ngoId);
+
+    if (!ngo) {
+      return res.status(404).json({ success: false, message: "NGO not found!!" });
+    }
+
+    // Check if the ngo already has an existing logo
+    if (ngo.profile.ngo_logo) {
+      // Delete the old logo file
+
+      const oldLogoPath = ngo.profile.ngo_logo;
+      const filePath = oldLogoPath.replace('http://localhost:4000', '');
+      // Construct the full file path on the server
+      const fullPath = `D:\\digiCSR_backend${filePath}`;
+
+      fs.unlink(fullPath, (err) => {
+        if (err) {
+          console.error(err);
+        }
+      });
+    }
+    // Update the logo path in the ngo's profile
+    ngo.profile.ngo_logo = fileUrl;
+    await ngo.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "NGO logo uploaded successfully",
+      LogoURL: fileUrl,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to upload NGO logo",
+      error: error.message,
+    });
+  }
+}
+
 exports.getNgoLogo = async (req, res) => {
   try {
     const { id } = req.params;
@@ -131,16 +189,21 @@ exports.getNgoLogo = async (req, res) => {
         .json({ success: false, message: "NGO not found." });
     }
 
-    const logoBuffer = ngo.profile.ngo_logo;
-    if (!logoBuffer) {
+    const LogoPath = ngo.profile.ngo_logo;
+    if (!LogoPath) {
       return res.status(404).json({
         success: false,
-        message: "Registration certificate not found.",
+        message: "NGO logo not found.",
       });
     }
 
-    res.set("Content-Type", "image");
-    res.send(logoBuffer);
+
+    res.status(200).json({
+      success: true,
+      message: "NGO logo found.",
+      LogoURL: LogoPath,
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error." });
@@ -165,6 +228,7 @@ exports.getAllNgo = async (req, res) => {
         "profile.location": 1,
         "profile.operation_area": 1,
         "profile.sectors": 1,
+        "profile.ngo_logo": 1,
       }
     );
     return res.status(200).send({ success: true, ngos });

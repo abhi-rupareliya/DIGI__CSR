@@ -71,7 +71,7 @@ const ngoSchema = new mongoose.Schema({
       },
     ],
     ngo_logo: {
-      type: Buffer,
+      type: String,
     },
   },
 });
