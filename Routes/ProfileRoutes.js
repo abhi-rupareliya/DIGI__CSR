@@ -1,5 +1,9 @@
 const multer = require("multer");
 
+const fileUploaderMiddleware = require("../Middlewares/fileUploaderMiddleware");
+const logoUploaderMiddleware = fileUploaderMiddleware('logo');
+const certificateUploaderMiddleware = fileUploaderMiddleware('certificate');
+
 const {
   getCompanyProfile,
   AddCompanyProfile,
@@ -7,6 +11,8 @@ const {
   getCompanyLogo,
   getAllCompany,
   deleteCompany,
+  uploadLogo,
+  uploadCertificate,
 } = require("../Controllers/CompanyProfileController");
 
 const {
@@ -15,6 +21,7 @@ const {
   getNgoLogo,
   getAllNgo,
   deleteNgo,
+  uploadNgoLogo,
 } = require("../Controllers/NGOProfileController");
 const AuthMiddleware = require("../Middlewares/AuthMiddleware");
 const {
@@ -33,7 +40,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const ProfileRoutes = (app) => {
-  app.get("/NGO", AuthMiddleware, getAllNgo);
+
+  // company
   app.get("/company/profile/:id", getCompanyProfile);
   app.get("/company/certificate/:id", getCertificate);
   app.get("/company/logo/:id", getCompanyLogo);
@@ -46,6 +54,12 @@ const ProfileRoutes = (app) => {
     AuthMiddleware,
     AddCompanyProfile
   );
+
+  app.post("/company/upload-logo", AuthMiddleware, logoUploaderMiddleware, uploadLogo);
+  app.post("/company/upload-certificate", AuthMiddleware, certificateUploaderMiddleware, uploadCertificate);
+
+  // Ngo
+  app.get("/NGO", AuthMiddleware, getAllNgo);
   app.get("/NGO/profile/:id", getNGOProfile);
   app.get("/NGO/logo/:id", getNgoLogo);
   app.post(
@@ -55,11 +69,14 @@ const ProfileRoutes = (app) => {
     AddNGOProfile
   );
 
+  app.post("/ngo/upload-logo", AuthMiddleware, logoUploaderMiddleware, uploadNgoLogo);
+
   // Admin
   app.delete("/company/delete", AuthMiddleware, deleteCompany);
   app.delete("/NGO/delete", AuthMiddleware, deleteNgo);
   app.delete("/Beneficiary/delete", AuthMiddleware, deleteBeneficiary);
   app.get("/Beneficiaries", AuthMiddleware, getAllBeneficiaries);
   app.get("/companies", AuthMiddleware, getAllCompany);
+
 };
 module.exports = ProfileRoutes;
