@@ -44,7 +44,7 @@ const ProfileRoutes = (app) => {
   app.get("/company/profile/:id", getCompanyProfile);
   app.get("/company/certificate/:id", getCertificate);
   app.get("/company/logo/:id", getCompanyLogo);
-  app.post("/company/add-profile", AuthMiddleware, AddCompanyProfile);
+  app.post("/company/add-profile", AuthMiddleware, upload.none(), AddCompanyProfile);
 
   app.post(
     "/company/upload-logo",
@@ -63,7 +63,7 @@ const ProfileRoutes = (app) => {
   app.get("/NGO", AuthMiddleware, getAllNgo);
   app.get("/NGO/profile/:id", getNGOProfile);
   app.get("/NGO/logo/:id", getNgoLogo);
-  app.post("/NGO/add-profile", AuthMiddleware, AddNGOProfile);
+  app.post("/NGO/add-profile", AuthMiddleware, upload.none(), AddNGOProfile);
 
   app.post(
     "/ngo/upload-logo",
