@@ -223,7 +223,7 @@ exports.getAllNgo = async (req, res) => {
         "profile.sectors": 1,
         "profile.ngo_logo": 1,
         "profile.summary": 1,
-        "profile.eshtablishment_year": 1,
+        "profile.establishment_year": 1,
       }
     );
     return res.status(200).send({ success: true, ngos });
