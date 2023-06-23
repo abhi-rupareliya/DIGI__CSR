@@ -78,7 +78,6 @@ exports.AddNGOProfile = async (req, res) => {
       "profile.phone": phone,
     };
 
-
     // console.warn(req.body);
     const { error } = NgoProfileValidator.validate({
       ...req.body,
@@ -113,7 +112,6 @@ exports.AddNGOProfile = async (req, res) => {
 };
 
 exports.uploadNgoLogo = async (req, res) => {
-
   console.log(req.userType);
   if (req.userType !== "ngo") {
     return res.status(401).json({ success: false, message: "Not Authorized." });
@@ -128,12 +126,13 @@ exports.uploadNgoLogo = async (req, res) => {
   const fileUrl = req.fileUrl;
 
   try {
-
     const ngoId = req.user._id;
     const ngo = await NGO.findById(ngoId);
 
     if (!ngo) {
-      return res.status(404).json({ success: false, message: "NGO not found!!" });
+      return res
+        .status(404)
+        .json({ success: false, message: "NGO not found!!" });
     }
 
     // Check if the ngo already has an existing logo
@@ -141,7 +140,7 @@ exports.uploadNgoLogo = async (req, res) => {
       // Delete the old logo file
 
       const oldLogoPath = ngo.profile.ngo_logo;
-      const filePath = oldLogoPath.replace('http://localhost:4000', '');
+      const filePath = oldLogoPath.replace("http://localhost:4000", "");
       // Construct the full file path on the server
       const fullPath = `D:\\digiCSR_backend${filePath}`;
 
@@ -168,7 +167,7 @@ exports.uploadNgoLogo = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 exports.getNgoLogo = async (req, res) => {
   try {
@@ -193,13 +192,11 @@ exports.getNgoLogo = async (req, res) => {
       });
     }
 
-
     res.status(200).json({
       success: true,
       message: "NGO logo found.",
       LogoURL: LogoPath,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error." });
@@ -225,6 +222,8 @@ exports.getAllNgo = async (req, res) => {
         "profile.operation_area": 1,
         "profile.sectors": 1,
         "profile.ngo_logo": 1,
+        "profile.summary": 1,
+        "profile.eshtablishment_year": 1,
       }
     );
     return res.status(200).send({ success: true, ngos });
