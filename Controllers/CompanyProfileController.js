@@ -3,6 +3,7 @@ const fs = require("fs");
 const {
   CompanyProfileValidator,
 } = require("../Services/Validators/companyValidator");
+const RFP = require("../Models/RFP");
 
 // Route to fetch data from the Company schema
 exports.getCompanyProfile = async (req, res) => {
@@ -51,9 +52,7 @@ exports.getCompanyProfile = async (req, res) => {
   }
 };
 
-
 exports.uploadCertificate = async (req, res) => {
-
   console.log(req.userType);
   if (req.userType !== "company") {
     return res.status(401).json({ success: false, message: "Not Authorized." });
@@ -68,12 +67,13 @@ exports.uploadCertificate = async (req, res) => {
   const fileUrl = req.fileUrl;
 
   try {
-
     const companyId = req.user._id;
     const company = await Company.findById(companyId);
 
     if (!company) {
-      return res.status(404).json({ success: false, message: "Company not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found" });
     }
 
     // Check if the company already has an existing certificate
@@ -81,7 +81,7 @@ exports.uploadCertificate = async (req, res) => {
       // Delete the old certificate file
 
       const oldCertificatePath = company.profile.registration_certificate;
-      const filePath = oldCertificatePath.replace('http://localhost:4000', '');
+      const filePath = oldCertificatePath.replace("http://localhost:4000", "");
       // Construct the full file path on the server
       const fullPath = `D:\\digiCSR_backend${filePath}`;
 
@@ -108,7 +108,7 @@ exports.uploadCertificate = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 exports.getCertificate = async (req, res) => {
   try {
@@ -132,7 +132,6 @@ exports.getCertificate = async (req, res) => {
       message: "Registration certificate found.",
       certificateURL: certificatePath,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error." });
@@ -214,9 +213,7 @@ exports.AddCompanyProfile = async (req, res) => {
   }
 };
 
-
 exports.uploadLogo = async (req, res) => {
-
   console.log(req.userType);
   if (req.userType !== "company") {
     return res.status(401).json({ success: false, message: "Not Authorized." });
@@ -231,12 +228,13 @@ exports.uploadLogo = async (req, res) => {
   const fileUrl = req.fileUrl;
 
   try {
-
     const companyId = req.user._id;
     const company = await Company.findById(companyId);
 
     if (!company) {
-      return res.status(404).json({ success: false, message: "Company not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found" });
     }
 
     // Check if the company already has an existing logo
@@ -244,7 +242,7 @@ exports.uploadLogo = async (req, res) => {
       // Delete the old logo file
 
       const oldLogoPath = company.profile.company_logo;
-      const filePath = oldLogoPath.replace('http://localhost:4000', '');
+      const filePath = oldLogoPath.replace("http://localhost:4000", "");
       // Construct the full file path on the server
       const fullPath = `D:\\digiCSR_backend${filePath}`;
 
@@ -271,7 +269,7 @@ exports.uploadLogo = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 exports.getCompanyLogo = async (req, res) => {
   try {
@@ -296,13 +294,11 @@ exports.getCompanyLogo = async (req, res) => {
       });
     }
 
-
     res.status(200).json({
       success: true,
       message: "Company logo found.",
       LogoURL: LogoPath,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error." });
@@ -337,6 +333,7 @@ exports.deleteCompany = async (req, res) => {
         .send({ success: false, message: "Not Authorized." });
     }
     const _id = req.body._id;
+    await RFP.deleteMany({ company: _id });
     const company = await Company.findOne({ _id });
     if (!company) {
       return res

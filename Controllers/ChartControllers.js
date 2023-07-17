@@ -155,7 +155,7 @@ exports.YearData = async (req, res) => {
 
 exports.NgoSectorsData = async (req, res) => {
   try {
-    if (req.userType !== "ngo" && req.userType !== "Beneficiary") {
+    if (req.userType !== "ngo" && req.userType !== "Beneficiary" && req.userType !== "Admin") {
       return res
         .status(400)
         .send({ success: false, message: "Not Authorized." });
@@ -206,7 +206,7 @@ exports.NgoSectorsData = async (req, res) => {
 
 exports.NgoStatesData = async (req, res) => {
   try {
-    if (req.userType !== "ngo" && req.userType !== "Beneficiary") {
+    if (req.userType !== "ngo" && req.userType !== "Beneficiary"  && req.userType !== "Admin") {
       return res
         .status(400)
         .send({ success: false, message: "Not Authorized." });
@@ -260,7 +260,7 @@ exports.NgoStatesData = async (req, res) => {
 
 exports.NgoYearData = async (req, res) => {
   try {
-    if (req.userType !== "ngo" && req.userType !== "Beneficiary") {
+    if (req.userType !== "ngo" && req.userType !== "Beneficiary"  && req.userType !== "Admin") {
       return res
         .status(400)
         .send({ success: false, message: "Not Authorized." });
